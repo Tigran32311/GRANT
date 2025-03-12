@@ -1,0 +1,22 @@
+@import './base.css';
+
+:root {
+  --button-green: #007631;
+  --light-green: #EDFFE8;
+  --darker-green: #00160B;
+}
+
+@font-face {
+  font-family: 'TildaSans';
+  src: url("./fonts/TildaSans-Regular/TildaSans-Regular.woff");
+  font-weight: 400;
+  font-style: normal;
+}
+
+#app {
+  font-family: 'TildaSans', sans-serif !important;
+  /*max-width: 1280px;*/
+  /*margin: 0 auto;*/
+  /*padding: 2rem;*/
+  font-weight: normal;
+}
