@@ -22,7 +22,7 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
     <div class="text-h5 font-weight-bold pa-10">
       Загрузить видео
     </div>
-    <form class="px-10" @submit="sendForm">
+    <form class="px-10" @submit.prevent="sendForm">
       <div class="text-subtitle-1">Номер учетного пункта указывается согласно <a href="https://скдф.рф/roads" target="_blank">реестру</a></div>
       <v-text-field
           v-model="formModel.pointKM"
@@ -97,11 +97,18 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
           v-model="formModel.inspectorFio"
           required
       ></v-text-field>
-      <v-text-field
+      <v-autocomplete
           label="Регион"
           v-model="formModel.region.id"
-          required
-      ></v-text-field>
+          :items=regions
+          item-title="name"
+          item-value="id"
+
+          chips
+          deletable-chips
+          filled
+
+      ></v-autocomplete>
       <v-autocomplete
           label="Дорога"
           v-model="formModel.road.id"
@@ -146,7 +153,6 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
   import {performLogout, refreshToken} from "@/utils/util.js";
   import {dateFormat} from "@/utils/helper.js";
   import router from "@/router/index.js";
-  import {tr} from "vuetify/locale";
   const { cookies } = useCookies();
   export default {
     name: "CreateReportForm",
@@ -160,9 +166,8 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
       menu3: false,
       fileVideo: null,
       roadModel: {},
-      roads: [
-
-      ],
+      roads: [],
+      regions: [],
       formModel: {
         pointKM: "",
         registrationDate: null,
@@ -185,6 +190,7 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
     }),
     created() {
       this.getRoads()
+      this.getRegions()
     },
     methods: {
       async getRoads() {
@@ -207,23 +213,44 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
           }
         }
       },
+      async getRegions() {
+        try {
+          const response = await httpResource.get("/getRegions",{
+            headers: {
+              Authorization: "Bearer "+store.getters.getAccessToken
+            }
+          });
+          if (response.status === 200) {
+            this.regions = response.data
+          }
+        } catch (error) {
+          console.log(error)
+          try {
+            await refreshToken()
+          } catch (error) {
+            performLogout()
+            await router.push("/")
+          }
+        }
+      },
       async sendForm() {
         try {
           const data = new FormData()
-          data.append("file",this.fileVideo,this.fileVideo.filename)
+          data.append("file",this.fileVideo)
           this.formModel.registrationDate = dateFormat(this.formModel.registrationDate)
           this.formModel.registrationStart = this.formModel.registrationStart+":00"
           this.formModel.registrationEnd = this.formModel.registrationEnd+":00"
-          data.append("videoData",JSON.stringify(this.formModel))
+          data.append("videoData",new Blob([JSON.stringify(this.formModel)],{type: 'application/json'}))
           const response = await httpResource.post("/video/upload",data,{
             headers: {
+              'Accept': 'application/json',
               Authorization: "Bearer "+store.getters.getAccessToken,
-              "Content-Type": "multipart/form-data; boundary=<calculated when request is sent>",
+              "Content-Type": "multipart/form-data",
             }
           });
           if (response.status===200) {
             this.notificationType="success"
-            this.notificationText="Видеоролик успешно загружен и поставлен в очередь на обработкуы"
+            this.notificationText="Видеоролик успешно загружен и поставлен в очередь на обработку"
             this.notification=true
           }
         } catch(error) {

@@ -2,21 +2,73 @@
 import {useRoute,useRouter} from "vue-router";
 import router from "@/router/index.js";
 import VlsuIcon from "@/components/icons/VlsuIcon.vue";
+import {ref} from "vue";
+
 </script>
 
 <template>
+  <v-snackbar
+      close-on-content-click
+      timeout="-1"
+    location="top"
+    v-model="notification"
+    :color="notificationSnack"
+  >
+    <v-alert
+        :text="notificationText"
+        closable
+        :type="notificationType"
+        class="ma-0 pa-0 w-100 h-100"
+    ></v-alert>
+  </v-snackbar>
 <!--        <v-icon :icon="$vuetify.icons.custom"></v-icon>-->
         <v-app-bar-nav-icon :icon="$vuetify.icons.custom" size="x-large" class="ml-md-15" style="font-size: 4vh" @click="router.push('/')"></v-app-bar-nav-icon>
         <div class="mx-auto d-sm-none d-none d-md-flex">
-          <v-btn class="text-none" @click="router.replace('/')">
+          <v-btn
+            class="text-none"
+            @click="router.replace('/admin_orgs')"
+            v-if="isAdmin"
+          >
+            Организации
+          </v-btn>
+          <v-btn
+              class="text-none"
+              @click="router.replace('/admin_orgs')"
+              v-if="isDirector"
+          >
+            Пользователи
+          </v-btn>
+          <v-btn class="text-none" v-if="!isAdmin" @click="router.replace('/')">
             О нас
           </v-btn>
-          <v-btn text="Загрузить видео" class="text-none" color="#007631" @click="router.push('/create_report')" variant="flat">
+          <v-btn v-if="!isAdmin" text="Загрузить видео" class="text-none" color="#007631" @click="router.push('/create_report')" variant="flat">
+          </v-btn>
+          <v-btn
+              class="text-none"
+              @click="router.replace('/admin_orgs')"
+              v-if="isAdmin"
+          >
+            Проверяющие
+          </v-btn>
+          <v-btn
+              class="text-none"
+              @click="router.replace('/admin_orgs')"
+              v-if="isAdmin"
+          >
+            Точки учета
+          </v-btn>
+          <v-btn
+              class="text-none"
+              @click="router.replace('/admin_orgs')"
+              v-if="isDirector || isPhPerson"
+          >
+            Профиль
           </v-btn>
           <v-btn text="Карта" class="text-none" @click="router.replace('/map')">
           </v-btn>
         </div>
-        <v-btn text="Войти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="loginDialog=true"></v-btn>
+        <v-btn v-if="store.getters.getIsAuthenticated=='false'" text="Войти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="loginDialog=true"></v-btn>
+        <v-btn v-if="store.getters.getIsAuthenticated=='true'" text="Выйти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="logoutDialog=true"></v-btn>
         <v-btn text="Загрузить видео" class="text-none mx-auto d-md-none" @click="router.push('/create_report')" color="#007631" variant="flat"></v-btn>
         <div class="mr-md-15 d-md-none">
           <v-menu location="bottom">
@@ -30,8 +82,11 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
               <v-list-item link>
                 <v-list-item-title @click="router.push('/map')">Карта</v-list-item-title>
               </v-list-item>
-              <v-list-item link v-if="!isLogin">
+              <v-list-item link v-if="store.getters.getIsAuthenticated=='false'" @click="loginDialog=true">
                 <v-list-item-title>Войти</v-list-item-title>
+              </v-list-item>
+              <v-list-item link v-if="store.getters.getIsAuthenticated=='true'" >
+                <v-list-item-title>Выйти</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -51,17 +106,19 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
       <div class="w-66 px-15 py-15">
         <div class="text-h6 mb-5 text-center">Авторизация</div>
         <div class="text-subtitle-2 text-center">Для входа необходимо ввести почту и пароль</div>
-        <form @submit.prevent @submit="login()">
+        <v-form @submit.prevent @submit="login()" ref="loginFormRef">
           <v-text-field
               label="Почта"
               type="email"
               v-model="loginForm.email"
+              :rules="[v => !!v || 'Поле обязательно']"
           ></v-text-field>
 
           <v-text-field
               label="Пароль"
               type="password"
               v-model="loginForm.password"
+              :rules="[v => !!v || 'Поле обязательно']"
           ></v-text-field>
           <v-btn variant="text" class="text-subtitle-1 pa-0 mb-2">Забыли пароль?</v-btn>
           <v-btn
@@ -72,7 +129,7 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
           >
             Войти
           </v-btn>
-        </form>
+        </v-form>
       </div>
     </v-card>
   </v-dialog>
@@ -83,16 +140,37 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
     <v-card
         class="d-flex flex-row align-center ma-0"  height="100%"
     >
-      <form class="pa-15" @submit.prevent>
+      <v-form class="pa-15" @submit.prevent="register()" ref="registerFormRef">
         <div class="text-h6 text-center">Регистрация</div>
         <v-text-field
-            v-model="loginForm.email"
+            v-model="registerForm.surname"
+            label="Фамилия"
+            type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+        ></v-text-field>
+
+        <v-text-field
+            v-model="registerForm.firstName"
+            label="Имя"
+            type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+        ></v-text-field>
+
+        <v-text-field
+            v-model="registerForm.patronymic"
+            label="Отчество (необязательно)"
+            type="text"
+        ></v-text-field>
+
+        <v-text-field
+            v-model="registerForm.email"
             label="Почта"
             type="email"
         ></v-text-field>
 
         <v-text-field
-            v-model="loginForm.password"
+            v-model="registerForm.password"
             label="Пароль"
             type="password"
         ></v-text-field>
@@ -100,18 +178,56 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
         <v-text-field
             label="Подтвердите пароль"
             type="confirm_password"
+            v-model="registerForm.confirm_password"
         ></v-text-field>
         <v-btn variant="text" class="text-subtitle-1 pa-0 mb-2" @click="registerDialog=false; loginDialog=true">Уже есть аккаунт? Войти</v-btn>
         <v-btn
             class="me-4 w-100 text-none"
             color="var(--button-green)"
             style="color: white"
-            type="Войти"
-            @submit="login()"
+            type="submit"
         >
           Зарегистрироваться
         </v-btn>
-      </form>
+      </v-form>
+    </v-card>
+  </v-dialog>
+  <v-dialog
+      v-model="logoutDialog"
+      width="auto"
+  >
+    <v-card
+        class="d-flex flex-row align-center pa-5"  height="100%"
+    >
+      <v-form>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <div class="text-h6 text-center">Вы действительно хотите выйти?</div>
+          <v-btn
+              icon="mdi-close"
+              variant="text"
+              @click="logoutDialog = false"
+          ></v-btn>
+        </v-card-title>
+
+        <div class="d-flex mb-5 ml-5 ga-3 align-center">
+          <v-btn
+              class="text-none"
+              color="var(--error)"
+              style="color: white"
+              @click="logout()"
+          >
+            Выйти
+          </v-btn>
+          <v-btn
+              class="text-none"
+              color="var(--button-green)"
+              style="color: white"
+              @click="logoutDialog=false"
+          >
+            Отмена
+          </v-btn>
+        </div>
+      </v-form>
     </v-card>
   </v-dialog>
 </template>
@@ -128,22 +244,42 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
   } from "../utils/util";
   import store from "../store/index.js";
   import {tr} from "vuetify/locale";
+  import {ref} from "vue";
+
+  const registerFormRef = ref()
+  const loginFormRef  = ref()
+
   export default {
     name: "Header",
     data: () => ({
       loginDialog: false,
       registerDialog: false,
+      logoutDialog: false,
       loginForm: {
         email: "",
         password: ""
+      },
+      registerForm: {
+        surname: "",
+        firstName: "",
+        patronymic: "",
+        email: "",
+        password: "",
+        confirm_password: "",
       },
       displayErrorMessage: false,
       errorMessage: "",
       loginInProcess: false,
       isLogin: false,
+      notification: false,
+      notificationText: "Успешно",
+      notificationType: "success",
+      notificationSnack: "success",
+      isAdmin: true,
+      isDirector: false,
+      isPhPerson: false,
     }),
     mounted() {
-      console.log(this.$store.getters)
       if (this.$store.getters.isAuthenticated) {
         this.isLogin = true
       }
@@ -151,39 +287,78 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
     watch: {
     },
     methods: {
-      redirectTo(e) {
-        console.log(this)
+      redirectTo() {
         return router.push({ path: '/map' })
       },
+      setNotification(type,snack,text) {
+        this.notificationType=type
+        this.notificationSnack=snack
+        this.notificationText=text
+        this.notification=true
+      },
       async login() {
-        this.loginInProcess = true;
-        let canNavigate = false;
         const loginRequest = {
           email: this.loginForm.email,
           password: this.loginForm.password
         };
+        if (loginRequest.email=='' || loginRequest.password=='') {
+          this.setNotification("error","var(--error)","Заполните все поля")
+          return;
+        }
         try {
           const response = await httpResource.post("/auth/signin", loginRequest); 
           if (response.status === 200) {
+            store.commit("setIsAuthenticated", 'true');
             store.commit("setAccessToken", response.data.accessToken);
             store.commit("setRefreshToken", response.data.refreshToken);
             store.commit("setCurrentUser", response.data.userData);
-            store.commit("isAuthenticated", true);
-            console.log(this.$store.getters)
-            // await getAuthenticatedUser();
+            location.reload()
           }
         } catch (error) {
-          performLogout();
+          this.setNotification("error","var(--error)","Произошла ошибка")
           const apierror = parseApierror(error);
           this.displayErrorMessage = true;
           this.errorMessage = apierror.message;
         }
-        this.loginInProcess = false;
-
-        if (canNavigate) {
-          // await router.replace("/");
+      },
+      async register() {
+        if (this.registerForm.password!==this.registerForm.confirm_password) {
+          this.setNotification("error","var(--error)","Пароли не совпадают")
+          return;
         }
-      }
+        // const {valid} = registerFormRef.value.validate()
+        const registerRequest = {
+          firstName: this.registerForm.firstName,
+          surname: this.registerForm.surname,
+          patronymic: this.registerForm.patronymic,
+          email: this.registerForm.email,
+          password: this.registerForm.password,
+        };
+
+        if (registerRequest.firstName=="" || registerRequest.surname=="" || registerRequest.email=="" || registerRequest.password=="") {
+          this.setNotification("error","var(--error)","Заполните все поля")
+          return;
+        }
+
+        try {
+          const response = await httpResource.post("/auth/signup", registerRequest);
+          if (response.status === 200) {
+            // store.commit("setAccessToken", response.data.accessToken);
+            // store.commit("setRefreshToken", response.data.refreshToken);
+            // store.commit("setCurrentUser", response.data.userData);
+            // store.commit("isAuthenticated", true);
+          }
+        } catch (error) {
+          const apierror = parseApierror(error);
+          this.displayErrorMessage = true;
+          this.errorMessage = apierror.message;
+          this.setNotification("error","var(--error)","Произошла ошибка, проверьте введенные данные")
+        }
+      },
+      async logout() {
+        performLogout();
+        location.reload()
+      },
     },
     components() {
       VlsuIcon

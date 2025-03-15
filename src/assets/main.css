@@ -4,6 +4,8 @@
   --button-green: #007631;
   --light-green: #EDFFE8;
   --darker-green: #00160B;
+  --error: rgb(176,0,32);
+  --warning: rgb(176, 76, 0);
 }
 
 @font-face {

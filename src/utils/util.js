@@ -28,8 +28,8 @@ export function parseApierror(error) {
 }
 
 export function performLogout() {
-    const intervalName = store.getters.getIntervalName;
-    if (intervalName) clearInterval(intervalName);
+    // const intervalName = store.getters.getIntervalName;
+    // if (intervalName) clearInterval(intervalName);
     store.commit("setIsAuthenticated", false);
     store.commit("clearCurrentUser");
 }

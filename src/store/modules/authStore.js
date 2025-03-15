@@ -61,6 +61,10 @@ const mutations = {
         state.isAuthenticated = false;
         state.accessToken = "";
         state.refreshToken = "";
+        cookies.set('isAuthenticated',false)
+        cookies.set('userData',"")
+        cookies.set('accessToken',"")
+        cookies.set('refreshToken',"")
     }
 };
 
