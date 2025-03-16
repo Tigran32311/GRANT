@@ -62,10 +62,7 @@
               density="compact"
               color="warning"
               style="color: white"
-              @click="() => {
-                editOrgForm.id = item.id
-                editOrganizationDialog = true
-              }"
+              @click="setEdit(item)"
           >
           </v-btn>
           <v-btn
@@ -73,6 +70,7 @@
               density="compact"
               color="error"
               style="color: white"
+              @click="setDeleteId(item)"
           >
           </v-btn>
         </div>
@@ -130,10 +128,10 @@
     <v-card
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15 w-100" @submit.prevent="addOrg()" ref="registerFormRef">
+      <v-form class="pa-15 w-100" @submit.prevent="editOrg()">
         <div class="text-h6 text-center">Регистрация</div>
         <v-text-field
-            v-model="addOrgForm.name"
+            v-model="editOrgForm.name"
             label="Наименование организации"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -143,7 +141,7 @@
 
         <v-autocomplete
             label="Регион"
-            v-model="addOrgForm.region.id"
+            v-model="editOrgForm.region.id"
             :items=regions
             item-title="name"
             item-value="id"
@@ -163,6 +161,39 @@
       </v-form>
     </v-card>
   </v-dialog>
+  <v-dialog
+      v-model="deleteDialog"
+      width="auto"
+  >
+    <v-card
+        class="d-flex flex-row align-center pa-5 justify-center"  height="100%"
+    >
+      <v-form>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <div class="text-h6 text-center">Вы действительно хотите удалить организацию?</div>
+        </v-card-title>
+
+        <div class="d-flex my-5 ga-3 align-center justify-center">
+          <v-btn
+              class="text-none"
+              color="var(--error)"
+              style="color: white"
+              @click="deleteOrg()"
+          >
+            Удалить
+          </v-btn>
+          <v-btn
+              class="text-none"
+              color="var(--button-green)"
+              style="color: white"
+              @click="deleteDialog=false"
+          >
+            Отмена
+          </v-btn>
+        </div>
+      </v-form>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -172,6 +203,7 @@ import store from "@/store/index.js";
 import {performLogout, refreshToken} from "@/utils/util.js";
 import {dateFormat} from "@/utils/helper.js";
 import router from "@/router/index.js";
+import {toRaw} from "vue";
 const { cookies } = useCookies();
 export default {
   name: "OrgList",
@@ -182,6 +214,8 @@ export default {
     roadModel: {},
     createOrganizationDialog: false,
     editOrganizationDialog: false,
+    deleteDialog: false,
+    deleteId: null,
     roads: [],
     regions: [],
     addOrgForm: {
@@ -192,7 +226,7 @@ export default {
     },
     editOrgForm: {
       region: {
-        id: null
+        id: null,
       },
       name: null,
       id: null,
@@ -280,19 +314,18 @@ export default {
       }
     },
     async editOrg() {
-      if (this.editOrgForm.name==''  || this.editOrgForm.region.id==null) {
+      if (this.editOrgForm.name=='' || this.editOrgForm.name==null || this.editOrgForm.region.id==null) {
         this.setNotification("error","var(--error)","Заполните все поля")
         return
       }
       try {
-
-        const response = await httpResource.post("/admin/createOrg",this.addOrgForm,{
+        const response = await httpResource.post("/admin/editOrg",this.editOrgForm,{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }
         });
         if (response.status === 200) {
-          this.setNotification("success","success","Организация добавлена")
+          this.setNotification("success","success","Изменения применены")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
@@ -306,6 +339,42 @@ export default {
         }
       }
     },
+    setEdit(item) {
+      this.editOrgForm = structuredClone(toRaw(item))
+      this.editOrganizationDialog=true
+    },
+    async deleteOrg() {
+      if (this.deleteId==null || this.deleteId=='') {
+        this.setNotification("error","var(--error)","Организация не указана")
+        return
+      }
+      try {
+        const data = new FormData()
+        data.set("orgId",this.deleteId)
+        const response = await httpResource.post("/admin/deleteOrg",data,{
+          headers: {
+            Authorization: "Bearer "+store.getters.getAccessToken
+          }
+        });
+        if (response.status === 200) {
+          this.setNotification("success","success","Изменения применены")
+          const timeout = window.setTimeout(function () {
+            location.reload()
+          }, 800)
+        }
+      } catch (error) {
+        try {
+          await refreshToken()
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+        }
+      }
+    },
+    setDeleteId(item) {
+      this.deleteDialog=true
+      this.deleteId=item.id
+    }
   },
 }
 </script>
@@ -313,4 +382,4 @@ export default {
 
 <style scoped>
 
-</style>
+</style>-
