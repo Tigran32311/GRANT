@@ -1,7 +1,5 @@
 <script setup>
-import {useRoute,useRouter} from "vue-router";
 import router from "@/router/index.js";
-import VlsuIcon from "@/components/icons/VlsuIcon.vue";
 import {ref} from "vue";
 
 </script>
@@ -67,8 +65,8 @@ import {ref} from "vue";
           <v-btn text="Карта" class="text-none" @click="router.replace('/map')">
           </v-btn>
         </div>
-        <v-btn v-if="store.getters.getIsAuthenticated=='false' || store.getters.getIsAuthenticated=='' || store.getters.getIsAuthenticated==null" text="Войти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="loginDialog=true"></v-btn>
-        <v-btn v-if="store.getters.getIsAuthenticated=='true'" text="Выйти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="logoutDialog=true"></v-btn>
+        <v-btn v-if="store.getters.getIsAuthenticated==='false' || store.getters.getIsAuthenticated==='' || store.getters.getIsAuthenticated==null" text="Войти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="loginDialog=true"></v-btn>
+        <v-btn v-if="store.getters.getIsAuthenticated==='true'" text="Выйти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="logoutDialog=true"></v-btn>
         <v-btn text="Загрузить видео" class="text-none mx-auto d-md-none" @click="router.push('/create_report')" color="#007631" variant="flat"></v-btn>
         <div class="mr-md-15 d-md-none">
           <v-menu location="bottom">
@@ -82,10 +80,10 @@ import {ref} from "vue";
               <v-list-item link>
                 <v-list-item-title @click="router.push('/map')">Карта</v-list-item-title>
               </v-list-item>
-              <v-list-item link v-if="store.getters.getIsAuthenticated=='false'" @click="loginDialog=true">
+              <v-list-item link v-if="store.getters.getIsAuthenticated==='false'" @click="loginDialog=true">
                 <v-list-item-title>Войти</v-list-item-title>
               </v-list-item>
-              <v-list-item link v-if="store.getters.getIsAuthenticated=='true'" >
+              <v-list-item link v-if="store.getters.getIsAuthenticated==='true'" >
                 <v-list-item-title>Выйти</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -240,10 +238,8 @@ import {ref} from "vue";
   import {
     parseApierror,
     performLogout,
-    getAuthenticatedUser
   } from "../utils/util";
   import store from "../store/index.js";
-  import {tr} from "vuetify/locale";
   import {ref} from "vue";
 
   const registerFormRef = ref()
@@ -301,7 +297,7 @@ import {ref} from "vue";
           email: this.loginForm.email,
           password: this.loginForm.password
         };
-        if (loginRequest.email=='' || loginRequest.password=='') {
+        if (loginRequest.email==='' || loginRequest.password==='') {
           this.setNotification("error","var(--error)","Заполните все поля")
           return;
         }
@@ -335,7 +331,7 @@ import {ref} from "vue";
           password: this.registerForm.password,
         };
 
-        if (registerRequest.firstName=="" || registerRequest.surname=="" || registerRequest.email=="" || registerRequest.password=="") {
+        if (registerRequest.firstName==="" || registerRequest.surname==="" || registerRequest.email==="" || registerRequest.password==="") {
           this.setNotification("error","var(--error)","Заполните все поля")
           return;
         }
