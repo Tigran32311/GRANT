@@ -33,16 +33,17 @@
   </div>
   <v-table
       fixed-header
+      class="ma-10"
   >
     <thead>
-    <tr>
-      <th class="text-left">
+    <tr class="">
+      <th class="text-left font-weight-bold">
         Наименование организации
       </th>
-      <th class="text-left">
+      <th class="text-left font-weight-bold">
         Регион
       </th>
-      <th class="text-left">
+      <th class="text-left font-weight-bold">
         Действия
       </th>
     </tr>
@@ -61,6 +62,10 @@
               density="compact"
               color="warning"
               style="color: white"
+              @click="() => {
+                editOrgForm.id = item.id
+                editOrganizationDialog = true
+              }"
           >
           </v-btn>
           <v-btn
@@ -79,39 +84,81 @@
   <v-dialog
       v-model="createOrganizationDialog"
       width="auto"
+      min-width="50%"
   >
     <v-card
-        class="d-flex flex-row align-center ma-0"  height="100%"
+        class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15" @submit.prevent="register()" ref="registerFormRef">
+      <v-form class="pa-15 w-100" @submit.prevent="addOrg()" ref="registerFormRef">
         <div class="text-h6 text-center">Регистрация</div>
         <v-text-field
-            v-model="registerForm.surname"
+            v-model="editOrgForm.name"
             label="Наименование организации"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
             required
+            min-width="250px"
         ></v-text-field>
 
         <v-autocomplete
-            label="Дорога"
-            v-model="formModel.region.id"
+            label="Регион"
+            v-model="editOrgForm.region.id"
             :items=regions
             item-title="name"
             item-value="id"
-
+            min-width="250px"
             chips
             deletable-chips
             filled
         ></v-autocomplete>
-        <v-btn variant="text" class="text-subtitle-1 pa-0 mb-2" @click="createOrganizationDialog=false;">Уже есть аккаунт? Войти</v-btn>
         <v-btn
             class="me-4 w-100 text-none"
             color="var(--button-green)"
             style="color: white"
             type="submit"
         >
-          Зарегистрироваться
+          Добавить
+        </v-btn>
+      </v-form>
+    </v-card>
+  </v-dialog>
+  <v-dialog
+      v-model="editOrganizationDialog"
+      width="auto"
+      min-width="50%"
+  >
+    <v-card
+        class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
+    >
+      <v-form class="pa-15 w-100" @submit.prevent="addOrg()" ref="registerFormRef">
+        <div class="text-h6 text-center">Регистрация</div>
+        <v-text-field
+            v-model="addOrgForm.name"
+            label="Наименование организации"
+            type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+
+        <v-autocomplete
+            label="Регион"
+            v-model="addOrgForm.region.id"
+            :items=regions
+            item-title="name"
+            item-value="id"
+            min-width="250px"
+            chips
+            deletable-chips
+            filled
+        ></v-autocomplete>
+        <v-btn
+            class="me-4 w-100 text-none"
+            color="var(--button-green)"
+            style="color: white"
+            type="submit"
+        >
+          Добавить
         </v-btn>
       </v-form>
     </v-card>
@@ -127,35 +174,28 @@ import {dateFormat} from "@/utils/helper.js";
 import router from "@/router/index.js";
 const { cookies } = useCookies();
 export default {
-  name: "CreateReportForm",
+  name: "OrgList",
   components: {
 
   },
   data: () => ({
     roadModel: {},
     createOrganizationDialog: false,
+    editOrganizationDialog: false,
     roads: [],
     regions: [],
-    formModel: {
-      pointKM: "",
-      orgName: null,
+    addOrgForm: {
       region: {
         id: null
       },
-      road: {
+      name: null,
+    },
+    editOrgForm: {
+      region: {
         id: null
       },
-      inspectorFio: "",
-      inspectorPost: "",
-      numberOfLanes: "",
-    },
-    registerForm: {
-      surname: "",
-      firstName: "",
-      patronymic: "",
-      email: "",
-      password: "",
-      confirm_password: "",
+      name: null,
+      id: null,
     },
     orgs: [],
     notification: false,
@@ -165,7 +205,7 @@ export default {
   }),
   created() {
     this.getOrgs()
-    // this.getRegions()
+    this.getRegions()
   },
   methods: {
     setNotification(type,snack,text) {
@@ -185,7 +225,79 @@ export default {
           this.orgs = response.data
         }
       } catch (error) {
-        console.log(error)
+        try {
+          await refreshToken()
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+        }
+      }
+    },
+    async getRegions() {
+      try {
+        const response = await httpResource.get("/getRegions",{
+          headers: {
+            Authorization: "Bearer "+store.getters.getAccessToken
+          }
+        });
+        if (response.status === 200) {
+          this.regions = response.data
+        }
+      } catch (error) {
+        try {
+          await refreshToken()
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+        }
+      }
+    },
+    async addOrg() {
+      if (this.addOrgForm.name==''  || this.addOrgForm.region.id==null) {
+        this.setNotification("error","var(--error)","Заполните все поля")
+        return
+      }
+      try {
+
+        const response = await httpResource.post("/admin/createOrg",this.addOrgForm,{
+          headers: {
+            Authorization: "Bearer "+store.getters.getAccessToken
+          }
+        });
+        if (response.status === 200) {
+          this.setNotification("success","success","Организация добавлена")
+          const timeout = window.setTimeout(function () {
+            location.reload()
+          }, 800)
+        }
+      } catch (error) {
+        try {
+          await refreshToken()
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+        }
+      }
+    },
+    async editOrg() {
+      if (this.editOrgForm.name==''  || this.editOrgForm.region.id==null) {
+        this.setNotification("error","var(--error)","Заполните все поля")
+        return
+      }
+      try {
+
+        const response = await httpResource.post("/admin/createOrg",this.addOrgForm,{
+          headers: {
+            Authorization: "Bearer "+store.getters.getAccessToken
+          }
+        });
+        if (response.status === 200) {
+          this.setNotification("success","success","Организация добавлена")
+          const timeout = window.setTimeout(function () {
+            location.reload()
+          }, 800)
+        }
+      } catch (error) {
         try {
           await refreshToken()
         } catch (error) {
