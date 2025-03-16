@@ -67,7 +67,7 @@ import {ref} from "vue";
           <v-btn text="Карта" class="text-none" @click="router.replace('/map')">
           </v-btn>
         </div>
-        <v-btn v-if="store.getters.getIsAuthenticated=='false' || store.getters.getIsAuthenticated==''" text="Войти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="loginDialog=true"></v-btn>
+        <v-btn v-if="store.getters.getIsAuthenticated=='false' || store.getters.getIsAuthenticated=='' || store.getters.getIsAuthenticated==null" text="Войти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="loginDialog=true"></v-btn>
         <v-btn v-if="store.getters.getIsAuthenticated=='true'" text="Выйти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="logoutDialog=true"></v-btn>
         <v-btn text="Загрузить видео" class="text-none mx-auto d-md-none" @click="router.push('/create_report')" color="#007631" variant="flat"></v-btn>
         <div class="mr-md-15 d-md-none">
@@ -275,7 +275,7 @@ import {ref} from "vue";
       notificationText: "Успешно",
       notificationType: "success",
       notificationSnack: "success",
-      isAdmin: true,
+      isAdmin: false,
       isDirector: false,
       isPhPerson: false,
     }),
