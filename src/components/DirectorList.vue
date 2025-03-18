@@ -18,7 +18,7 @@
     ></v-alert>
   </v-snackbar>
   <div class="text-h4 font-weight-bold pa-10">
-    Список организаций
+    Список проверяющих
   </div>
   <div class="d-flex justify-end">
     <v-btn
@@ -26,9 +26,9 @@
         color="var(--button-green)"
         style="color: white"
         type="submit"
-        @click="createOrganizationDialog=true"
+        @click="createDirDialog=true"
     >
-      Добавить организацию
+      Добавить проверяющего
     </v-btn>
   </div>
   <v-table
@@ -38,10 +38,13 @@
     <thead>
     <tr class="">
       <th class="text-left font-weight-bold">
-        Наименование организации
+        ФИО
       </th>
       <th class="text-left font-weight-bold">
-        Регион
+        Почта
+      </th>
+      <th class="text-left font-weight-bold">
+        Организация
       </th>
       <th class="text-left font-weight-bold">
         Действия
@@ -50,11 +53,12 @@
     </thead>
     <tbody>
     <tr
-        v-for="item in orgs"
-        :key="item.name"
+        v-for="item in directors"
+        :key="item.id"
     >
-      <td>{{ item.name }}</td>
-      <td>{{ item.region.name }}</td>
+      <td>{{ item.surname + item.firstname + item.patronymic}}</td>
+      <td>{{ item.email }}</td>
+      <td>{{ item.organization.name }}</td>
       <td>
         <div class="d-flex flex-row ga-5">
           <v-btn
@@ -80,28 +84,59 @@
   </v-table>
 
   <v-dialog
-      v-model="createOrganizationDialog"
+      v-model="createDirDialog"
       width="auto"
       min-width="50%"
   >
     <v-card
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15 w-100" @submit.prevent="addOrg()" ref="registerFormRef">
-        <div class="text-h6 text-center">Добавление организации</div>
+      <v-form class="pa-15 w-100" @submit.prevent="addDirector()" ref="registerFormRef">
+        <div class="text-h6 text-center">Добавить проверяющего</div>
         <v-text-field
-            v-model="addOrgForm.name"
-            label="Наименование организации"
+            v-model="addDirForm.surname"
+            label="Фамилия"
             type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+        <v-text-field
+            v-model="addDirForm.firstname"
+            label="Имя"
+            type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+        <v-text-field
+            v-model="addDirForm.patronymic"
+            label="Отчество (необязательно)"
+            type="text"
+            required
+            min-width="250px"
+        ></v-text-field>
+        <v-text-field
+            v-model="addDirForm.email"
+            label="Почта"
+            type="email"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+        <v-text-field
+            v-model="addDirForm.password"
+            label="Пароль"
+            type="password"
             :rules="[v => !!v || 'Поле обязательно']"
             required
             min-width="250px"
         ></v-text-field>
 
         <v-autocomplete
-            label="Регион"
-            v-model="addOrgForm.region.id"
-            :items=regions
+            label="Организация"
+            v-model="addDirForm.organization.id"
+            :items=orgs
             item-title="name"
             item-value="id"
             min-width="250px"
@@ -121,28 +156,59 @@
     </v-card>
   </v-dialog>
   <v-dialog
-      v-model="editOrganizationDialog"
+      v-model="editDirDialog"
       width="auto"
       min-width="50%"
   >
     <v-card
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15 w-100" @submit.prevent="editOrg()">
-        <div class="text-h6 text-center">Редактирование организации</div>
+      <v-form class="pa-15 w-100" @submit.prevent="editDir()">
+        <div class="text-h6 text-center">Редактирование проверяющего</div>
         <v-text-field
-            v-model="editOrgForm.name"
-            label="Наименование организации"
+            v-model="editDirForm.surname"
+            label="Фамилия"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
             required
             min-width="250px"
         ></v-text-field>
+        <v-text-field
+            v-model="editDirForm.firstname"
+            label="Имя"
+            type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+        <v-text-field
+            v-model="editDirForm.patronymic"
+            label="Отчество (необязательно)"
+            type="text"
+            required
+            min-width="250px"
+        ></v-text-field>
+        <v-text-field
+            v-model="editDirForm.email"
+            label="Почта"
+            type="email"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+        <div class="text-right" style="color: var(--warning)">* Если не нужно менять пароль, оставьте поле пустым</div>
+        <v-text-field
+            v-model="editDirForm.password"
+            label="Пароль"
+            type="password"
+            required
+            min-width="250px"
+        ></v-text-field>
 
         <v-autocomplete
-            label="Регион"
-            v-model="editOrgForm.region.id"
-            :items=regions
+            label="Организация"
+            v-model="editDirForm.organization.id"
+            :items=orgs
             item-title="name"
             item-value="id"
             min-width="250px"
@@ -169,7 +235,7 @@
         class="d-flex flex-row align-center pa-5 justify-center"  height="100%"
     >
       <v-form>
-<!--        <v-card-title class="d-flex justify-space-between align-center">-->
+<!--        <v-card-title class="d-flex justify-space-between align-center" >-->
           <div class="text-h6 text-center">Вы действительно хотите удалить организацию?</div>
 <!--        </v-card-title>-->
 
@@ -178,7 +244,7 @@
               class="text-none"
               color="var(--error)"
               style="color: white"
-              @click="deleteOrg()"
+              @click="deleteDir()"
           >
             Удалить
           </v-btn>
@@ -206,29 +272,36 @@ import router from "@/router/index.js";
 import {toRaw} from "vue";
 const { cookies } = useCookies();
 export default {
-  name: "OrgList",
+  name: "DirectorList",
   components: {
 
   },
   data: () => ({
     roadModel: {},
-    createOrganizationDialog: false,
-    editOrganizationDialog: false,
+    createDirDialog: false,
+    editDirDialog: false,
     deleteDialog: false,
     deleteId: null,
-    roads: [],
-    regions: [],
-    addOrgForm: {
-      region: {
+    directors: [],
+    addDirForm: {
+      firstname: null,
+      patronymic: null,
+      surname: null,
+      email: null,
+      password: null,
+      organization: {
         id: null
       },
-      name: null,
     },
-    editOrgForm: {
-      region: {
-        id: null,
+    editDirForm: {
+      firstname: null,
+      patronymic: null,
+      surname: null,
+      email: null,
+      password: null,
+      organization: {
+        id: null
       },
-      name: null,
       id: null,
     },
     orgs: [],
@@ -239,7 +312,7 @@ export default {
   }),
   created() {
     this.getOrgs()
-    this.getRegions()
+    this.getDirectors()
   },
   methods: {
     setNotification(type,snack,text) {
@@ -267,15 +340,15 @@ export default {
         }
       }
     },
-    async getRegions() {
+    async getDirectors() {
       try {
-        const response = await httpResource.get("/getRegions",{
+        const response = await httpResource.get("/admin/allDir",{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }
         });
         if (response.status === 200) {
-          this.regions = response.data
+          this.directors = response.data
         }
       } catch (error) {
         try {
@@ -286,21 +359,19 @@ export default {
         }
       }
     },
-    async addOrg() {
-      console.log(this.addOrgForm)
-      if (this.addOrgForm.name==''  || this.addOrgForm.region.id==null) {
-        this.setNotification("error","var(--error)","Заполните все поля")
+    async addDirector() {
+      if (this.addDirForm.email==''  || this.addDirForm.organization.id==null || this.addDirForm.firstname=='' || this.addDirForm.surname=='' || this.addDirForm.password=='') {
+        this.setNotification("error","var(--error)","Заполните все обязательные поля")
         return
       }
       try {
-
-        const response = await httpResource.post("/admin/createOrg",this.addOrgForm,{
+        const response = await httpResource.post("/admin/createDir",this.addDirForm,{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }
         });
         if (response.status === 200) {
-          this.setNotification("success","success","Организация добавлена")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
@@ -314,13 +385,13 @@ export default {
         }
       }
     },
-    async editOrg() {
-      if (this.editOrgForm.name=='' || this.editOrgForm.name==null || this.editOrgForm.region.id==null) {
+    async editDir() {
+      if (this.editDirForm.email==''  || this.editDirForm.organization.id==null || this.editDirForm.firstname=='' || this.editDirForm.surname=='' || this.editDirForm.id=='') {
         this.setNotification("error","var(--error)","Заполните все поля")
         return
       }
       try {
-        const response = await httpResource.post("/admin/editOrg",this.editOrgForm,{
+        const response = await httpResource.post("/admin/editDir",this.editDirForm,{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }
@@ -341,18 +412,17 @@ export default {
       }
     },
     setEdit(item) {
-      this.editOrgForm = structuredClone(toRaw(item))
-      this.editOrganizationDialog=true
+      this.editDirForm = structuredClone(toRaw(item))
+      this.editDirForm.password=null
+      this.editDirDialog=true
     },
-    async deleteOrg() {
+    async deleteDir() {
       if (this.deleteId==null || this.deleteId=='') {
-        this.setNotification("error","var(--error)","Организация не указана")
+        this.setNotification("error","var(--error)","Пользователь не указан")
         return
       }
       try {
-        const data = new FormData()
-        data.set("orgId",this.deleteId)
-        const response = await httpResource.post("/admin/deleteOrg",data,{
+        const response = await httpResource.post("/admin/deleteDir?dirId="+this.deleteId,"",{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }

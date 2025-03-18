@@ -3,6 +3,10 @@ import HomeView from '../views/HomeView.vue'
 import MapView from "../views/MapView.vue";
 import CreateReportView from "../views/CreateReportView.vue";
 import AdminOrgsView from "@/views/AdminOrgsView.vue";
+import AdminDirectorsView from "@/views/AdminDirectorsView.vue";
+import AdminRoadsView from "@/views/AdminRoadsView.vue";
+import store from "../store/index.js";
+import {ro} from "vuetify/locale";
 
 const routes = [
   {
@@ -21,9 +25,19 @@ const routes = [
     component: CreateReportView
   },
   {
-    path: '/admin_orgs',
+    path: '/admin/organizations',
     name: 'admin_orgs',
     component: AdminOrgsView
+  },
+  {
+    path: '/admin/directors',
+    name: 'director_list',
+    component: AdminDirectorsView
+  },
+  {
+    path: '/admin/roads',
+    name: 'admin_roads',
+    component: AdminRoadsView
   },
 ]
 
@@ -32,44 +46,30 @@ const router = createRouter({
   routes
 })
 
-// router.beforeEach((to, from, next) => {
-//   const profileStore = useProfileStore();
-//
-//   const isToPathAuthPage =
-//       to.path.indexOf('auth') >= 0 && to.name !== 'EmailVerifyPage';
-//
-//   const isToESIAPage =
-//       to.path.indexOf('esia') >= 0 && (to.name === 'EsiaAuthRegister' || to.name === 'EsiaAuthConfirm');
-//
-//   const { access } = getStorageTokens();
-//   if (profileStore.isUserAuth && !profileStore.isAccountConnect && isToESIAPage) {
-//     next();
-//     return;
-//   }
-//   if (profileStore.isUserAuth && isToPathAuthPage)
-//     next({ name: 'ControlPanel' });
-//   else if (isToESIAPage) next();
-//   else if (profileStore.isUserAuth && !isToPathAuthPage) next();
-//   else if (!profileStore.isUserAuth && access) {
-//     useProfileStore()
-//         .getUserProfile()
-//         .then(() => {
-//           if (!isToPathAuthPage && to.name !== undefined) next();
-//           else {
-//             next({ name: 'ControlPanel' });
-//           }
-//         })
-//         .catch(() => {
-//           profileStore.mClearUserProfile();
-//           clearStorageTokens();
-//           next({ name: 'LoginPage' });
-//         });
-//   } else if (isToPathAuthPage) {
-//     next();
-//   } else {
-//     next({ name: 'LoginPage' });
-//   }
-// });
+router.beforeEach(async (to, from, next) => {
+  const isAuth = store.getters.getIsAuthenticated;
+  let role = null;
+  if (isAuth==='true') {
+    role = store.getters.getCurrentUser.role;
+  }
+  if (role!=null || role==='') {
+    if (isAuth==='true' && role!=='ADMIN' && (to.name==='admin_orgs' || to.name==='director_list' || to.name==='admin_roads')) {
+      return next({name: 'home'});
+    } else if (isAuth==='true' && role!=='DIRECTOR' && (to.name==='admin_orgs' || to.name==='director_list' || to.name==='admin_roads')) {
+      return next({name: 'home'});
+    } else {
+      return next();
+    }
+  } else {
+    if ((isAuth==='false' || isAuth===null) && to.name!=='map' && to.name!=='home') {
+      console.log(to.name)
+      return next({name: 'home'});
+    } else {
+      return next()
+    }
+  }
+  return next()
+});
 
 
 export default router

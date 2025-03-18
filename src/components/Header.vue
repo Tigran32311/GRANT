@@ -1,6 +1,7 @@
 <script setup>
 import router from "@/router/index.js";
 import {ref} from "vue";
+import {tr} from "vuetify/locale";
 
 </script>
 
@@ -24,14 +25,14 @@ import {ref} from "vue";
         <div class="mx-auto d-sm-none d-none d-md-flex">
           <v-btn
             class="text-none"
-            @click="router.replace('/admin_orgs')"
+            @click="router.replace('/admin/organizations')"
             v-if="isAdmin"
           >
             Организации
           </v-btn>
           <v-btn
               class="text-none"
-              @click="router.replace('/admin_orgs')"
+              @click="router.replace('/admin/organizations')"
               v-if="isDirector"
           >
             Пользователи
@@ -43,14 +44,14 @@ import {ref} from "vue";
           </v-btn>
           <v-btn
               class="text-none"
-              @click="router.replace('/admin_orgs')"
+              @click="router.replace('/admin/directors')"
               v-if="isAdmin"
           >
             Проверяющие
           </v-btn>
           <v-btn
               class="text-none"
-              @click="router.replace('/admin_orgs')"
+              @click="router.replace('/admin/roads')"
               v-if="isAdmin"
           >
             Точки учета
@@ -68,22 +69,31 @@ import {ref} from "vue";
         <v-btn v-if="store.getters.getIsAuthenticated==='false' || store.getters.getIsAuthenticated==='' || store.getters.getIsAuthenticated==null" text="Войти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="loginDialog=true"></v-btn>
         <v-btn v-if="store.getters.getIsAuthenticated==='true'" text="Выйти" variant="outlined" color="var(--button-green)" class="text-none mr-md-15 d-sm-none d-none d-md-flex" @click="logoutDialog=true"></v-btn>
         <v-btn text="Загрузить видео" class="text-none mx-auto d-md-none" @click="router.push('/create_report')" color="#007631" variant="flat"></v-btn>
-        <div class="mr-md-15 d-md-none">
+        <div class="mr-md-15 d-md-none ">
           <v-menu location="bottom">
             <template v-slot:activator="{ props }">
               <v-btn icon="mdi-menu" variant="text" v-bind="props"></v-btn>
             </template>
             <v-list min-width="300" nav>
-              <v-list-item link>
+              <v-list-item link v-if="isAdmin" @click="router.replace('/admin/directors')">
+                <v-list-item-title>Проверяющие</v-list-item-title>
+              </v-list-item>
+              <v-list-item link v-if="isAdmin" @click="router.replace('/admin/roads')">
+                <v-list-item-title>Точки учета</v-list-item-title>
+              </v-list-item>
+              <v-list-item link v-if="isAdmin" @click="router.replace('/admin/organizations')">
+                <v-list-item-title>Организации</v-list-item-title>
+              </v-list-item>
+              <v-list-item link v-if="!isAdmin">
                 <v-list-item-title value="" @click="router.push('/')">О нас</v-list-item-title>
               </v-list-item>
               <v-list-item link>
                 <v-list-item-title @click="router.push('/map')">Карта</v-list-item-title>
               </v-list-item>
-              <v-list-item link v-if="store.getters.getIsAuthenticated==='false'" @click="loginDialog=true">
+              <v-list-item link v-if="store.getters.getIsAuthenticated==='false' || store.getters.getIsAuthenticated===null" @click="loginDialog=true">
                 <v-list-item-title>Войти</v-list-item-title>
               </v-list-item>
-              <v-list-item link v-if="store.getters.getIsAuthenticated==='true'" >
+              <v-list-item link v-if="store.getters.getIsAuthenticated==='true'" @click="logoutDialog=true">
                 <v-list-item-title>Выйти</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -96,12 +106,12 @@ import {ref} from "vue";
     <v-card
         class="d-flex flex-row align-center" height="100%"
     >
-      <div class="w-33 px-15 py-15 d-flex flex-column align-center ga-3 justify-center h-100 ma-0" style="min-height: 60vh;background-color: var(--light-green)">
+      <div class="w-33 px-15 py-15 flex-column align-center ga-3 justify-center h-100 ma-0 d-none d-md-flex" style="min-height: 60vh;background-color: var(--light-green)">
         <div class="text-h6 text-center">Регистрация</div>
         <div class="text-subtitle-2 text-center">Для создания аккаунта необходимо пройти процедуру регистрации</div>
         <v-btn variant="outlined" class="text-none" color="var(--button-green)" @click="loginDialog=false; registerDialog=true">Зарегистрироваться</v-btn>
       </div>
-      <div class="w-66 px-15 py-15">
+      <div class="w-sm-100 w-md-66 pa-10 pa-md-15">
         <div class="text-h6 mb-5 text-center">Авторизация</div>
         <div class="text-subtitle-2 text-center">Для входа необходимо ввести почту и пароль</div>
         <v-form @submit.prevent @submit="login()" ref="loginFormRef">
@@ -119,6 +129,7 @@ import {ref} from "vue";
               :rules="[v => !!v || 'Поле обязательно']"
           ></v-text-field>
           <v-btn variant="text" class="text-subtitle-1 pa-0 mb-2">Забыли пароль?</v-btn>
+          <v-btn variant="text" class="text-none d-md-none mb-2" color="var(--button-green)" @click="loginDialog=false; registerDialog=true">Нет аккаунта? Зарегистрироваться</v-btn>
           <v-btn
               class="me-4 w-100 text-none"
               color="var(--button-green)"
@@ -138,7 +149,7 @@ import {ref} from "vue";
     <v-card
         class="d-flex flex-row align-center ma-0"  height="100%"
     >
-      <v-form class="pa-15" @submit.prevent="register()" ref="registerFormRef">
+      <v-form class="pa-5 pa-md-15" @submit.prevent="register()" ref="registerFormRef">
         <div class="text-h6 text-center">Регистрация</div>
         <v-text-field
             v-model="registerForm.surname"
@@ -241,6 +252,7 @@ import {ref} from "vue";
   } from "../utils/util";
   import store from "../store/index.js";
   import {ref} from "vue";
+  import {ca} from "vuetify/locale";
 
   const registerFormRef = ref()
   const loginFormRef  = ref()
@@ -274,10 +286,29 @@ import {ref} from "vue";
       isAdmin: false,
       isDirector: false,
       isPhPerson: false,
+      isEmployee: false,
     }),
     mounted() {
-      if (this.$store.getters.isAuthenticated) {
+      console.log("fsf"+this.isLogin)
+      if (this.$store.getters.getIsAuthenticated==='true') {
         this.isLogin = true
+        console.log(this.$store.getters.getCurrentUser.role)
+        switch (this.$store.getters.getCurrentUser.role) {
+          case 'ADMIN':
+            this.isAdmin=true
+            break;
+          case 'DIRECTOR':
+            this.isDirector=true
+            break;
+          case 'EMPLOYEE':
+            this.isEmployee=true
+            break;
+          case 'PHYSICAL_PERSON':
+            this.isPhPerson=true
+            break;
+          default:
+            break;
+        }
       }
     },
     watch: {
@@ -339,10 +370,8 @@ import {ref} from "vue";
         try {
           const response = await httpResource.post("/auth/signup", registerRequest);
           if (response.status === 200) {
-            // store.commit("setAccessToken", response.data.accessToken);
-            // store.commit("setRefreshToken", response.data.refreshToken);
-            // store.commit("setCurrentUser", response.data.userData);
-            // store.commit("isAuthenticated", true);
+            this.setNotification("success","success","Регистрация прошла успешно, Вам было выслано письмо на почту со ссылкой для подтверждения аккаунта")
+            this.registerDialog=false
           }
         } catch (error) {
           const apierror = parseApierror(error);

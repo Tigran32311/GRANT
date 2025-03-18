@@ -18,7 +18,7 @@
     ></v-alert>
   </v-snackbar>
   <div class="text-h4 font-weight-bold pa-10">
-    Список организаций
+    Список дорог
   </div>
   <div class="d-flex justify-end">
     <v-btn
@@ -26,9 +26,9 @@
         color="var(--button-green)"
         style="color: white"
         type="submit"
-        @click="createOrganizationDialog=true"
+        @click="createRoadDialog=true"
     >
-      Добавить организацию
+      Добавить дорогу
     </v-btn>
   </div>
   <v-table
@@ -38,7 +38,10 @@
     <thead>
     <tr class="">
       <th class="text-left font-weight-bold">
-        Наименование организации
+        Наименование дороги
+      </th>
+      <th class="text-left font-weight-bold">
+        Координаты
       </th>
       <th class="text-left font-weight-bold">
         Регион
@@ -50,10 +53,11 @@
     </thead>
     <tbody>
     <tr
-        v-for="item in orgs"
+        v-for="item in roads"
         :key="item.name"
     >
       <td>{{ item.name }}</td>
+      <td>{{ item.coordinates }}</td>
       <td>{{ item.region.name }}</td>
       <td>
         <div class="d-flex flex-row ga-5">
@@ -80,18 +84,27 @@
   </v-table>
 
   <v-dialog
-      v-model="createOrganizationDialog"
+      v-model="createRoadDialog"
       width="auto"
       min-width="50%"
   >
     <v-card
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15 w-100" @submit.prevent="addOrg()" ref="registerFormRef">
-        <div class="text-h6 text-center">Добавление организации</div>
+      <v-form class="pa-15 w-100" @submit.prevent="addRoadFunc()" ref="registerFormRef">
+        <div class="text-h6 text-center">Добавление дороги</div>
         <v-text-field
-            v-model="addOrgForm.name"
+            v-model="addRoad.name"
             label="Наименование организации"
+            type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+
+        <v-text-field
+            v-model="addRoad.coordinates"
+            label="Координаты"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
             required
@@ -100,7 +113,7 @@
 
         <v-autocomplete
             label="Регион"
-            v-model="addOrgForm.region.id"
+            v-model="addRoad.region.id"
             :items=regions
             item-title="name"
             item-value="id"
@@ -121,18 +134,27 @@
     </v-card>
   </v-dialog>
   <v-dialog
-      v-model="editOrganizationDialog"
+      v-model="editRoadDialog"
       width="auto"
       min-width="50%"
   >
     <v-card
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15 w-100" @submit.prevent="editOrg()">
+      <v-form class="pa-15 w-100" @submit.prevent="editRoad()">
         <div class="text-h6 text-center">Редактирование организации</div>
         <v-text-field
-            v-model="editOrgForm.name"
-            label="Наименование организации"
+            v-model="editRoadForm.name"
+            label="Наименование дороги"
+            type="text"
+            :rules="[v => !!v || 'Поле обязательно']"
+            required
+            min-width="250px"
+        ></v-text-field>
+
+        <v-text-field
+            v-model="editRoadForm.coordinates"
+            label="Координаты"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
             required
@@ -141,7 +163,7 @@
 
         <v-autocomplete
             label="Регион"
-            v-model="editOrgForm.region.id"
+            v-model="editRoadForm.region.id"
             :items=regions
             item-title="name"
             item-value="id"
@@ -178,7 +200,7 @@
               class="text-none"
               color="var(--error)"
               style="color: white"
-              @click="deleteOrg()"
+              @click="deleteRoad()"
           >
             Удалить
           </v-btn>
@@ -212,23 +234,25 @@ export default {
   },
   data: () => ({
     roadModel: {},
-    createOrganizationDialog: false,
-    editOrganizationDialog: false,
+    createRoadDialog: false,
+    editRoadDialog: false,
     deleteDialog: false,
     deleteId: null,
     roads: [],
     regions: [],
-    addOrgForm: {
+    addRoad: {
       region: {
         id: null
       },
       name: null,
+      coordinates: null,
     },
-    editOrgForm: {
+    editRoadForm: {
       region: {
         id: null,
       },
       name: null,
+      coordinates: null,
       id: null,
     },
     orgs: [],
@@ -237,11 +261,31 @@ export default {
     notificationType: "success",
     notificationSnack: ""
   }),
-  created() {
-    this.getOrgs()
+  mounted() {
+    this.getRoads()
     this.getRegions()
   },
   methods: {
+    async getRoads() {
+      try {
+        const response = await httpResource.get("/getRoads",{
+          headers: {
+            Authorization: "Bearer "+store.getters.getAccessToken
+          }
+        });
+        if (response.status === 200) {
+          this.roads = response.data
+        }
+      } catch (error) {
+        console.log(error)
+        try {
+          await refreshToken()
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+        }
+      }
+    },
     setNotification(type,snack,text) {
       this.notificationType=type
       this.notificationSnack=snack
@@ -286,15 +330,15 @@ export default {
         }
       }
     },
-    async addOrg() {
-      console.log(this.addOrgForm)
-      if (this.addOrgForm.name==''  || this.addOrgForm.region.id==null) {
+    async addRoadFunc() {
+      console.log(this.addRoad)
+      if (this.addRoad.name==''  || this.addRoad.region.id==null || this.addRoad.coordinates=='') {
         this.setNotification("error","var(--error)","Заполните все поля")
         return
       }
       try {
 
-        const response = await httpResource.post("/admin/createOrg",this.addOrgForm,{
+        const response = await httpResource.post("/admin/createRoad",this.addRoad,{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }
@@ -314,13 +358,13 @@ export default {
         }
       }
     },
-    async editOrg() {
-      if (this.editOrgForm.name=='' || this.editOrgForm.name==null || this.editOrgForm.region.id==null) {
+    async editRoad() {
+      if (this.editRoadForm.id=='' ||this.editRoadForm.name=='' || this.editRoadForm.coordinates=='' || this.editRoadForm.region.id==null) {
         this.setNotification("error","var(--error)","Заполните все поля")
         return
       }
       try {
-        const response = await httpResource.post("/admin/editOrg",this.editOrgForm,{
+        const response = await httpResource.post("/admin/editRoad",this.editRoadForm,{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }
@@ -341,18 +385,18 @@ export default {
       }
     },
     setEdit(item) {
-      this.editOrgForm = structuredClone(toRaw(item))
-      this.editOrganizationDialog=true
+      this.editRoadForm = structuredClone(toRaw(item))
+      this.editRoadDialog=true
     },
-    async deleteOrg() {
+    async deleteRoad() {
       if (this.deleteId==null || this.deleteId=='') {
         this.setNotification("error","var(--error)","Организация не указана")
         return
       }
       try {
         const data = new FormData()
-        data.set("orgId",this.deleteId)
-        const response = await httpResource.post("/admin/deleteOrg",data,{
+        data.set("roadId",this.deleteId)
+        const response = await httpResource.post("/admin/deleteRoad",data,{
           headers: {
             Authorization: "Bearer "+store.getters.getAccessToken
           }
