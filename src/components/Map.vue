@@ -111,9 +111,13 @@ import {
   YandexMapMarker,
   YandexMapZoomControl
 } from "vue-yandex-maps";
+import httpResource from "@/http/httpResource.js";
+import store from "@/store/index.js";
+import {performLogout, refreshToken} from "@/utils/util.js";
+import router from "@/router/index.js";
 
 export default {
-  name: "FooterSite",
+  name: "Map",
   components: {YandexMapDefaultFeaturesLayer, YandexMapMarker, YandexMapDefaultSchemeLayer, YandexMap,YandexMapZoomControl},
   data: () => ({
     markers: [
@@ -121,9 +125,135 @@ export default {
         coordinates: [40.393079, 56.134054],
         draggable: true,
         color: "var(--button-green)",
+        onClick: ()=>{getCard("48e40ca2-08d0-4f57-bd94-8d9599b19acf")},
+        // dataId: ,
       },
+      // {
+      //   coordinates: [42.047150, 55.581302],
+      //   draggable: true,
+      //   color: "var(--button-green)",
+      //   onClick: () => {
+      //     console.log(123456)
+      //   }
+      // },
     ],
+    chosenMarker: {
+      id: null,
+      registration_date: null,
+      bus_quantity: null,
+      road_train_20_tons_quantity: null,
+      small_road_train_quantity: null,
+      road_train_over_30_tons_quantity: null,
+      truck_over_14_tons_quantity: null,
+      truck_up_to_2_tons: null,
+      truck_up_to_6_tons: null,
+      truck_up_to_8_tons: null,
+      truck_up_to_14_tons: null,
+      passenger_car_quantity: null,
+      motorcycles_and_mopeds_quantity: null,
+      all_quantity: null,
+      road: {
+        id: null,
+        name: null,
+      }
+    },
   }),
+  created() {
+    this.getMarkers()
+  },
+  methods: {
+    async getMarkers() {
+      try {
+        const response = await httpResource.get("/getMyDownloads",{
+          headers: {
+            Authorization: "Bearer "+store.getters.getAccessToken
+          }
+        });
+        // this.markers.push({
+        //   coordinates: response.data[0].road.coordinates.split(',').map(Number),
+        //   draggable: true,
+        //   color: "var(--button-green)",
+        // })
+        if (response.status === 200) {
+          let that = this
+          response.data.forEach(function (r) {
+            that.markers.push({
+              coordinates: r.road.coordinates.split(',').map(Number),
+              draggable: true,
+              color: "var(--button-green)",
+              dataId: "",
+            })
+          })
+          // this.markers = that
+          console.log(response)
+        }
+      } catch (error) {
+        try {
+          if (error.status===401) {
+            const refresh = await refreshToken()
+            if (refresh===200) {
+              await this.getMarkers()
+            } else {
+              await router.push("/")
+              location.reload()
+            }
+          } else {
+            this.setNotification("error","var(--error)",error.response.data['message'])
+          }
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+          location.reload()
+        }
+      }
+    },
+  }
+}
+
+async function getCard(dataId) {
+  try {
+    const response = await httpResource.get("/getIntensity?trafficRegCardId=" + dataId, {
+      headers: {
+        Authorization: "Bearer " + store.getters.getAccessToken
+      }
+    });
+    // this.markers.push({
+    //   coordinates: response.data[0].road.coordinates.split(',').map(Number),
+    //   draggable: true,
+    //   color: "var(--button-green)",
+    // })
+    if (response.status === 200) {
+      let that = this
+      response.data.forEach(function (r) {
+        that.markers.push({
+          coordinates: r.road.coordinates.split(',').map(Number),
+          draggable: true,
+          color: "var(--button-green)",
+          dataId: "",
+        })
+      })
+      // this.markers = that
+      console.log(this.markers)
+    }
+  } catch (error) {
+    try {
+      if (error.status === 401) {
+        const refresh = await refreshToken()
+        if (refresh === 200) {
+          await this.getMarkers()
+        } else {
+          await router.push("/")
+          location.reload()
+        }
+      } else {
+        this.setNotification("error", "var(--error)", error.response.data['message'])
+      }
+    } catch (error) {
+      // performLogout()
+      // await router.push("/")
+      // location.reload()
+    }
+  }
 }
 </script>
 

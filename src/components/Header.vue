@@ -32,7 +32,7 @@ import {tr} from "vuetify/locale";
           </v-btn>
           <v-btn
               class="text-none"
-              @click="router.replace('/admin/organizations')"
+              @click="router.replace('/dir/users')"
               v-if="isDirector"
           >
             Пользователи
@@ -58,8 +58,15 @@ import {tr} from "vuetify/locale";
           </v-btn>
           <v-btn
               class="text-none"
-              @click="router.replace('/admin_orgs')"
-              v-if="isDirector || isPhPerson"
+              @click="router.replace('/dir/profile')"
+              v-if="isDirector"
+          >
+            Профиль
+          </v-btn>
+          <v-btn
+              class="text-none"
+              @click="router.replace('/profile')"
+              v-if="isEmployee || isPhPerson"
           >
             Профиль
           </v-btn>
@@ -382,7 +389,8 @@ import {tr} from "vuetify/locale";
       },
       async logout() {
         performLogout();
-        location.reload()
+        this.logoutDialog=false
+        await router.push("/")
       },
     },
     components() {

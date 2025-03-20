@@ -1,4 +1,5 @@
 import axios from "axios";
+import {performLogout, refreshToken} from "@/utils/util.js";
 
 const isHandlerEnabled = (config = {}) => {
     return !(config.hasOwnProperty("handlerEnabled") && !config.handlerEnabled);
@@ -33,7 +34,10 @@ const errorHandler = error => {
 
         if (error.response) {
             if (error.response.status === 401) {
-                performLogout();
+                const refresh = refreshToken()
+                if (refresh!==200) {
+                    performLogout();
+                }
             }
         }
     }

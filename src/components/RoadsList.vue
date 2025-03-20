@@ -280,6 +280,7 @@ export default {
         console.log(error)
         try {
           await refreshToken()
+          await this.getRoads()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -305,6 +306,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.getOrgs()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -324,6 +326,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.getRegions()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -352,6 +355,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.addRoadFunc()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -378,6 +382,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.editRoad()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -410,6 +415,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.deleteRoad()
         } catch (error) {
           performLogout()
           await router.push("/")

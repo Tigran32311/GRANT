@@ -7,6 +7,8 @@ import AdminDirectorsView from "@/views/AdminDirectorsView.vue";
 import AdminRoadsView from "@/views/AdminRoadsView.vue";
 import store from "../store/index.js";
 import {ro} from "vuetify/locale";
+import DirectorUsersView from "@/views/DirectorUsersView.vue";
+import ProfileView from "@/views/ProfileView.vue";
 
 const routes = [
   {
@@ -39,6 +41,21 @@ const routes = [
     name: 'admin_roads',
     component: AdminRoadsView
   },
+  {
+    path: '/dir/users',
+    name: 'dir_users',
+    component: DirectorUsersView
+  },
+  {
+    path: '/dir/profile',
+    name: 'dir_profile',
+    component: ProfileView
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: ProfileView
+  },
 ]
 
 const router = createRouter({
@@ -52,17 +69,19 @@ router.beforeEach(async (to, from, next) => {
   if (isAuth==='true') {
     role = store.getters.getCurrentUser.role;
   }
-  if (role!=null || role==='') {
+
+  if (role!=null || role!=='') {
     if (isAuth==='true' && role!=='ADMIN' && (to.name==='admin_orgs' || to.name==='director_list' || to.name==='admin_roads')) {
       return next({name: 'home'});
-    } else if (isAuth==='true' && role!=='DIRECTOR' && (to.name==='admin_orgs' || to.name==='director_list' || to.name==='admin_roads')) {
+    } else if (isAuth==='true' && role!=='DIRECTOR' && (to.name==='dir_users' || to.name==='dir_profile')) {
+      return next({name: 'home'});
+    } else if (isAuth==='true' && role!=='EMPLOYEE' && role!=='PHYSICAL_PERSON' && (to.name==='profile')) {
       return next({name: 'home'});
     } else {
       return next();
     }
   } else {
     if ((isAuth==='false' || isAuth===null) && to.name!=='map' && to.name!=='home') {
-      console.log(to.name)
       return next({name: 'home'});
     } else {
       return next()

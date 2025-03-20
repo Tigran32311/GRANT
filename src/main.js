@@ -43,7 +43,7 @@ const vuetify = createVuetify({
 })
 
 globalCookiesConfig({
-    expireTimes: "30d",
+    expireTimes: "10d",
     path: "/",
     domain: "",
     secure: true,

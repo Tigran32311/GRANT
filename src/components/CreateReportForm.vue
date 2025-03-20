@@ -6,18 +6,20 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
 </script>
 
 <template>
-  <div class="d-flex justify-center">
+  <v-snackbar
+      close-on-content-click
+      timeout="-1"
+      location="top"
+      v-model="notification"
+      :color="notificationSnack"
+  >
     <v-alert
-        v-model="notification"
         :text="notificationText"
-        position="fixed"
         closable
         :type="notificationType"
-        class=""
-        style="min-width: 50px;display: grid;
-  place-items: center; z-index: 99"
+        class="ma-0 pa-0 w-100 h-100"
     ></v-alert>
-  </div>
+  </v-snackbar>
   <div>
     <div class="text-h5 font-weight-bold pa-10">
       Загрузить видео
@@ -186,13 +188,20 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
       },
       notification: false,
       notificationText: "Успешно",
-      notificationType: "success"
+      notificationType: "success",
+      notificationSnack: "",
     }),
     created() {
       this.getRoads()
       this.getRegions()
     },
     methods: {
+      setNotification(type,snack,text) {
+        this.notificationType=type
+        this.notificationSnack=snack
+        this.notificationText=text
+        this.notification=true
+      },
       async getRoads() {
         try {
           const response = await httpResource.get("/getRoads",{
@@ -249,13 +258,15 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
             }
           });
           if (response.status===200) {
-            this.notificationType="success"
-            this.notificationText="Видеоролик успешно загружен и поставлен в очередь на обработку"
-            this.notification=true
+            this.setNotification("success","success","Видеоролик успешно загружен и поставлен в очередь на обработку")
+            const timeout = window.setTimeout(function () {
+              location.reload()
+            }, 800)
           }
         } catch(error) {
           try {
             await refreshToken()
+            await this.sendForm()
           } catch (error) {
             performLogout()
             await router.push("/")

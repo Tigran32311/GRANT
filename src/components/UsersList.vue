@@ -18,7 +18,7 @@
     ></v-alert>
   </v-snackbar>
   <div class="text-h4 font-weight-bold pa-10">
-    Список проверяющих
+    Список пользователей
   </div>
   <div class="d-flex justify-end">
     <v-btn
@@ -26,9 +26,9 @@
         color="var(--button-green)"
         style="color: white"
         type="submit"
-        @click="createDirDialog=true"
+        @click="createDialog=true"
     >
-      Добавить проверяющего
+      Добавить пользователя
     </v-btn>
   </div>
   <v-table
@@ -43,9 +43,9 @@
       <th class="text-left font-weight-bold">
         Почта
       </th>
-      <th class="text-left font-weight-bold">
-        Организация
-      </th>
+<!--      <th class="text-left font-weight-bold">-->
+<!--        Организация-->
+<!--      </th>-->
       <th class="text-left font-weight-bold">
         Действия
       </th>
@@ -53,12 +53,12 @@
     </thead>
     <tbody>
     <tr
-        v-for="item in directors"
+        v-for="item in emps"
         :key="item.id"
     >
       <td>{{ item.surname +" "+ item.firstname +" "+ item.patronymic}}</td>
       <td>{{ item.email }}</td>
-      <td>{{ item.organization.name }}</td>
+<!--      <td>{{ // item.organization.name }}</td>-->
       <td>
         <div class="d-flex flex-row ga-5">
           <v-btn
@@ -70,11 +70,19 @@
           >
           </v-btn>
           <v-btn
-              icon="mdi-trash-can"
+              icon="mdi-lock"
               density="compact"
               color="error"
               style="color: white"
-              @click="setDeleteId(item)"
+              @click="setBanId(item)"
+          >
+          </v-btn>
+          <v-btn
+              icon="mdi-account-reactivate"
+              density="compact"
+              color="success"
+              style="color: white"
+              @click="setActivateId(item)"
           >
           </v-btn>
         </div>
@@ -84,17 +92,17 @@
   </v-table>
 
   <v-dialog
-      v-model="createDirDialog"
+      v-model="createDialog"
       width="auto"
       min-width="50%"
   >
     <v-card
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15 w-100" @submit.prevent="addDirector()" ref="registerFormRef">
+      <v-form class="pa-15 w-100" @submit.prevent="addUser()" ref="registerFormRef">
         <div class="text-h6 text-center">Добавить проверяющего</div>
         <v-text-field
-            v-model="addDirForm.surname"
+            v-model="addForm.surname"
             label="Фамилия"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -102,7 +110,7 @@
             min-width="250px"
         ></v-text-field>
         <v-text-field
-            v-model="addDirForm.firstname"
+            v-model="addForm.firstname"
             label="Имя"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -110,14 +118,14 @@
             min-width="250px"
         ></v-text-field>
         <v-text-field
-            v-model="addDirForm.patronymic"
+            v-model="addForm.patronymic"
             label="Отчество (необязательно)"
             type="text"
             required
             min-width="250px"
         ></v-text-field>
         <v-text-field
-            v-model="addDirForm.email"
+            v-model="addForm.email"
             label="Почта"
             type="email"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -125,7 +133,7 @@
             min-width="250px"
         ></v-text-field>
         <v-text-field
-            v-model="addDirForm.password"
+            v-model="addForm.password"
             label="Пароль"
             type="password"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -133,17 +141,6 @@
             min-width="250px"
         ></v-text-field>
 
-        <v-autocomplete
-            label="Организация"
-            v-model="addDirForm.organization.id"
-            :items=orgs
-            item-title="name"
-            item-value="id"
-            min-width="250px"
-            chips
-            deletable-chips
-            filled
-        ></v-autocomplete>
         <v-btn
             class="me-4 w-100 text-none"
             color="var(--button-green)"
@@ -156,17 +153,17 @@
     </v-card>
   </v-dialog>
   <v-dialog
-      v-model="editDirDialog"
+      v-model="editDialog"
       width="auto"
       min-width="50%"
   >
     <v-card
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
-      <v-form class="pa-15 w-100" @submit.prevent="editDir()">
+      <v-form class="pa-15 w-100" @submit.prevent="editUser()">
         <div class="text-h6 text-center">Редактирование проверяющего</div>
         <v-text-field
-            v-model="editDirForm.surname"
+            v-model="editForm.surname"
             label="Фамилия"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -174,7 +171,7 @@
             min-width="250px"
         ></v-text-field>
         <v-text-field
-            v-model="editDirForm.firstname"
+            v-model="editForm.firstname"
             label="Имя"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -182,14 +179,14 @@
             min-width="250px"
         ></v-text-field>
         <v-text-field
-            v-model="editDirForm.patronymic"
+            v-model="editForm.patronymic"
             label="Отчество (необязательно)"
             type="text"
             required
             min-width="250px"
         ></v-text-field>
         <v-text-field
-            v-model="editDirForm.email"
+            v-model="editForm.email"
             label="Почта"
             type="email"
             :rules="[v => !!v || 'Поле обязательно']"
@@ -198,24 +195,24 @@
         ></v-text-field>
         <div class="text-right" style="color: var(--warning)">* Если не нужно менять пароль, оставьте поле пустым</div>
         <v-text-field
-            v-model="editDirForm.password"
+            v-model="editForm.password"
             label="Пароль"
             type="password"
             required
             min-width="250px"
         ></v-text-field>
 
-        <v-autocomplete
-            label="Организация"
-            v-model="editDirForm.organization.id"
-            :items=orgs
-            item-title="name"
-            item-value="id"
-            min-width="250px"
-            chips
-            deletable-chips
-            filled
-        ></v-autocomplete>
+<!--        <v-autocomplete-->
+<!--            label="Организация"-->
+<!--            v-model="editForm.organization.id"-->
+<!--            :items=orgs-->
+<!--            item-title="name"-->
+<!--            item-value="id"-->
+<!--            min-width="250px"-->
+<!--            chips-->
+<!--            deletable-chips-->
+<!--            filled-->
+<!--        ></v-autocomplete>-->
         <v-btn
             class="me-4 w-100 text-none"
             color="var(--button-green)"
@@ -228,31 +225,58 @@
     </v-card>
   </v-dialog>
   <v-dialog
-      v-model="deleteDialog"
+      v-model="banDialog"
       width="auto"
   >
     <v-card
         class="d-flex flex-row align-center pa-5 justify-center"  height="100%"
     >
       <v-form>
-<!--        <v-card-title class="d-flex justify-space-between align-center" >-->
-          <div class="text-h6 text-center">Вы действительно хотите удалить пользователя?</div>
-<!--        </v-card-title>-->
-
+        <div class="text-h6 text-center">Вы действительно хотите заблокировать пользователя?</div>
         <div class="d-flex my-5 ga-3 align-center justify-center">
           <v-btn
               class="text-none"
               color="var(--error)"
               style="color: white"
-              @click="deleteDir()"
+              @click="banUser()"
           >
-            Удалить
+            Заблокировать
           </v-btn>
           <v-btn
               class="text-none"
               color="var(--button-green)"
               style="color: white"
-              @click="deleteDialog=false"
+              @click="banDialog=false"
+          >
+            Отмена
+          </v-btn>
+        </div>
+      </v-form>
+    </v-card>
+  </v-dialog>
+  <v-dialog
+      v-model="activateDialog"
+      width="auto"
+  >
+    <v-card
+        class="d-flex flex-row align-center pa-5 justify-center"  height="100%"
+    >
+      <v-form>
+        <div class="text-h6 text-center">Вы действительно хотите активировать пользователя?</div>
+        <div class="d-flex my-5 ga-3 align-center justify-center">
+          <v-btn
+              class="text-none"
+              color="success"
+              style="color: white"
+              @click="activateUser()"
+          >
+            Активировать
+          </v-btn>
+          <v-btn
+              class="text-none"
+              color="primary"
+              style="color: white"
+              @click="activateDialog=false"
           >
             Отмена
           </v-btn>
@@ -272,18 +296,20 @@ import router from "@/router/index.js";
 import {toRaw} from "vue";
 const { cookies } = useCookies();
 export default {
-  name: "DirectorList",
+  name: "UsersList",
   components: {
 
   },
   data: () => ({
     roadModel: {},
-    createDirDialog: false,
-    editDirDialog: false,
-    deleteDialog: false,
-    deleteId: null,
-    directors: [],
-    addDirForm: {
+    emps: [],
+    createDialog: false,
+    editDialog: false,
+    banDialog: false,
+    banId: null,
+    activateDialog: false,
+    activeId: null,
+    addForm: {
       firstname: null,
       patronymic: null,
       surname: null,
@@ -293,7 +319,7 @@ export default {
         id: null
       },
     },
-    editDirForm: {
+    editForm: {
       firstname: null,
       patronymic: null,
       surname: null,
@@ -304,76 +330,34 @@ export default {
       },
       id: null,
     },
-    orgs: [],
     notification: false,
     notificationText: "Успешно",
     notificationType: "success",
     notificationSnack: ""
   }),
   created() {
-    this.getOrgs()
-    this.getDirectors()
+    this.getEmployees()
   },
   methods: {
-    setNotification(type,snack,text) {
-      this.notificationType=type
-      this.notificationSnack=snack
-      this.notificationText=text
-      this.notification=true
+    setNotification(type, snack, text) {
+      this.notificationType = type
+      this.notificationSnack = snack
+      this.notificationText = text
+      this.notification = true
     },
-    async getOrgs() {
-      try {
-        const response = await httpResource.get("/getOrgs",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.orgs = response.data
-        }
-      } catch (error) {
-        try {
-          await refreshToken()
-          await this.getOrgs()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
-      }
-    },
-    async getDirectors() {
-      try {
-        const response = await httpResource.get("/admin/allDir",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.directors = response.data
-        }
-      } catch (error) {
-        try {
-          await refreshToken()
-          await this.getDirectors()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
-      }
-    },
-    async addDirector() {
-      if (this.addDirForm.email==''  || this.addDirForm.organization.id==null || this.addDirForm.firstname=='' || this.addDirForm.surname=='' || this.addDirForm.password=='') {
-        this.setNotification("error","var(--error)","Заполните все обязательные поля")
+    async addUser() {
+      if (this.addForm.email == '' || this.addForm.firstname == '' || this.addForm.surname == '' || this.addForm.password == '') {
+        this.setNotification("error", "var(--error)", "Заполните все обязательные поля")
         return
       }
       try {
-        const response = await httpResource.post("/admin/createDir",this.addDirForm,{
+        const response = await httpResource.post("/director/createEmp", this.addForm, {
           headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
+            Authorization: "Bearer " + store.getters.getAccessToken
           }
         });
         if (response.status === 200) {
-          this.setNotification("success","success","Успешно")
+          this.setNotification("success", "success", "Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
@@ -381,26 +365,26 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
-          await this.addDirector()
+          await this.addUser()
         } catch (error) {
           performLogout()
           await router.push("/")
         }
       }
     },
-    async editDir() {
-      if (this.editDirForm.email==''  || this.editDirForm.organization.id==null || this.editDirForm.firstname=='' || this.editDirForm.surname=='' || this.editDirForm.id=='') {
-        this.setNotification("error","var(--error)","Заполните все поля")
+    async editUser() {
+      if (this.editForm.email == '' || this.editForm.firstname == '' || this.editForm.surname == '' || this.editForm.id == '') {
+        this.setNotification("error", "var(--error)", "Заполните все поля")
         return
       }
       try {
-        const response = await httpResource.post("/admin/editDir",this.editDirForm,{
+        const response = await httpResource.post("/director/editEmp", this.editForm, {
           headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
+            Authorization: "Bearer " + store.getters.getAccessToken
           }
         });
         if (response.status === 200) {
-          this.setNotification("success","success","Изменения применены")
+          this.setNotification("success", "success", "Изменения применены")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
@@ -408,7 +392,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
-          await this.editDir()
+          await this.editUser()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -416,23 +400,25 @@ export default {
       }
     },
     setEdit(item) {
-      this.editDirForm = structuredClone(toRaw(item))
-      this.editDirForm.password=null
-      this.editDirDialog=true
+      this.editForm = structuredClone(toRaw(item))
+      this.editForm.password = null
+      this.editDialog = true
     },
-    async deleteDir() {
-      if (this.deleteId==null || this.deleteId=='') {
-        this.setNotification("error","var(--error)","Пользователь не указан")
+    async banUser() {
+      if (this.banId == null || this.banId == '') {
+        this.setNotification("error", "var(--error)", "Пользователь не указан")
         return
       }
       try {
-        const response = await httpResource.post("/admin/deleteDir?dirId="+this.deleteId,"",{
+        const data = new FormData()
+        data.append('empId',this.banId)
+        const response = await httpResource.post("/director/banEmp", data, {
           headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
+            Authorization: "Bearer " + store.getters.getAccessToken
           }
         });
         if (response.status === 200) {
-          this.setNotification("success","success","Изменения применены")
+          this.setNotification("success", "success", "Изменения применены")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
@@ -440,18 +426,71 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
-          await this.deleteDir()
+          await this.banUser()
         } catch (error) {
           performLogout()
           await router.push("/")
         }
       }
     },
-    setDeleteId(item) {
-      this.deleteDialog=true
-      this.deleteId=item.id
-    }
-  },
+    async activateUser() {
+      if (this.activeId == null || this.activeId == '') {
+        this.setNotification("error", "var(--error)", "Пользователь не указан")
+        return
+      }
+      try {
+        const data = new FormData()
+        data.append('empId',this.activeId)
+        const response = await httpResource.post("/director/activateEmp", data, {
+          headers: {
+            Authorization: "Bearer " + store.getters.getAccessToken
+          }
+        });
+        if (response.status === 200) {
+          this.setNotification("success", "success", "Изменения применены")
+          const timeout = window.setTimeout(function () {
+            location.reload()
+          }, 800)
+        }
+      } catch (error) {
+        try {
+          await refreshToken()
+          await this.activateUser()
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+        }
+      }
+    },
+    setBanId(item) {
+      this.banDialog = true
+      this.banId = item.id
+    },
+    setActivateId(item) {
+      this.activateDialog = true
+      this.activeId = item.id
+    },
+    async getEmployees() {
+      try {
+        const response = await httpResource.get("/director/getEmps", {
+          headers: {
+            Authorization: "Bearer " + store.getters.getAccessToken
+          }
+        });
+        if (response.status === 200) {
+          this.emps = response.data
+        }
+      } catch (error) {
+        try {
+          await refreshToken()
+          await this.getEmployees()
+        } catch (error) {
+          performLogout()
+          await router.push("/")
+        }
+      }
+    },
+  }
 }
 </script>
 

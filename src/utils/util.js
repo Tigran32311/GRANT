@@ -44,12 +44,21 @@ export async function refreshTokenInternal() {
 }
 
 export async function refreshToken() {
-    const response = await httpResource.post("/auth/refresh-token",{refreshToken: store.getters.getRefreshToken});
-    store.commit("setAccessToken", response.data.accessToken);
+    try {
+        const response = await httpResource.post("/auth/refresh-token",{refreshToken: store.getters.getRefreshToken});
+        if (response.status==200) {
+            store.commit("setAccessToken", response.data.accessToken);
+            return response.status;
+        }
+    } catch (error) {
+        if (error.status==401) {
+            await performLogout()
+        }
+    }
+
     // store.commit("setRefreshToken", response.data.refreshToken);
     // store.commit("setCurrentUser", response.data.userData);
     // store.commit("isAuthenticated", true);
-    return response.status;
 }
 
 export async function getAuthenticatedUser() {

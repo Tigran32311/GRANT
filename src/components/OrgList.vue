@@ -261,6 +261,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.getOrgs()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -280,6 +281,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.getRegions()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -308,6 +310,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.addOrg()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -334,6 +337,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.editOrg()
         } catch (error) {
           performLogout()
           await router.push("/")
@@ -366,6 +370,7 @@ export default {
       } catch (error) {
         try {
           await refreshToken()
+          await this.deleteOrg()
         } catch (error) {
           performLogout()
           await router.push("/")
