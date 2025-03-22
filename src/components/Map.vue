@@ -16,6 +16,18 @@ import {YandexMapDefaultMarker} from "vue-yandex-maps";
       ><div class="text-h6">Карта</div></v-btn>
       <div class="text-subtitle-1 mt-10">Выберите интересующую точку на карте слева и по ней появятся данные
         об интенсивности справа</div>
+      <v-autocomplete
+          label="Год учета"
+          v-model="year"
+          :items=years
+          min-width="250px"
+
+          chips
+          deletable-chips
+          filled
+          auto-select-first
+
+      ></v-autocomplete>
     </v-col>
   </v-row>
   <v-row>
@@ -113,7 +125,7 @@ import {
 } from "vue-yandex-maps";
 import httpResource from "@/http/httpResource.js";
 import store from "@/store/index.js";
-import {performLogout, refreshToken} from "@/utils/util.js";
+import {getMarkers, getRegions, performLogout, refreshToken} from "@/utils/util.js";
 import router from "@/router/index.js";
 
 export default {
@@ -123,20 +135,22 @@ export default {
     markers: [
       {
         coordinates: [40.393079, 56.134054],
-        draggable: true,
+        draggable: false,
         color: "var(--button-green)",
         onClick: ()=>{getCard("48e40ca2-08d0-4f57-bd94-8d9599b19acf")},
         // dataId: ,
       },
       // {
       //   coordinates: [42.047150, 55.581302],
-      //   draggable: true,
+      //   draggable: false,
       //   color: "var(--button-green)",
       //   onClick: () => {
       //     console.log(123456)
       //   }
       // },
     ],
+    years: [],
+    year: 2025,
     chosenMarker: {
       id: null,
       registration_date: null,
@@ -160,53 +174,37 @@ export default {
   }),
   created() {
     this.getMarkers()
+    this.years = this.getYears()
   },
   methods: {
     async getMarkers() {
       try {
-        const response = await httpResource.get("/getMyDownloads",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        // this.markers.push({
-        //   coordinates: response.data[0].road.coordinates.split(',').map(Number),
-        //   draggable: true,
-        //   color: "var(--button-green)",
-        // })
-        if (response.status === 200) {
+        const response = await getMarkers()
+        if (response.status===200) {
           let that = this
           response.data.forEach(function (r) {
             that.markers.push({
               coordinates: r.road.coordinates.split(',').map(Number),
-              draggable: true,
+              draggable: false,
               color: "var(--button-green)",
               dataId: "",
             })
           })
-          // this.markers = that
-          console.log(response)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          if (error.status===401) {
-            const refresh = await refreshToken()
-            if (refresh===200) {
-              await this.getMarkers()
-            } else {
-              await router.push("/")
-              location.reload()
-            }
-          } else {
-            this.setNotification("error","var(--error)",error.response.data['message'])
-          }
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-          location.reload()
-        }
+        console.log(error)
       }
     },
+    getYears() {
+      var currentYear = new Date().getFullYear(), years = [];
+      let startYear = 2025;
+      while ( startYear <= currentYear ) {
+        years.push(startYear++);
+      }
+      return years;
+    }
   }
 }
 
@@ -227,7 +225,7 @@ async function getCard(dataId) {
       response.data.forEach(function (r) {
         that.markers.push({
           coordinates: r.road.coordinates.split(',').map(Number),
-          draggable: true,
+          draggable: false,
           color: "var(--button-green)",
           dataId: "",
         })

@@ -9,6 +9,7 @@ import store from "../store/index.js";
 import {ro} from "vuetify/locale";
 import DirectorUsersView from "@/views/DirectorUsersView.vue";
 import ProfileView from "@/views/ProfileView.vue";
+import ProfilePersonView from "@/views/ProfilePersonView.vue";
 
 const routes = [
   {
@@ -54,7 +55,7 @@ const routes = [
   {
     path: '/profile',
     name: 'profile',
-    component: ProfileView
+    component: ProfilePersonView
   },
 ]
 

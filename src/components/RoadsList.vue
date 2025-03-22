@@ -222,7 +222,15 @@
 import httpResource from "@/http/httpResource.js";
 import { useCookies } from "vue3-cookies";
 import store from "@/store/index.js";
-import {performLogout, refreshToken} from "@/utils/util.js";
+import {
+  addDirector,
+  addRoadFunc, deleteRoad, editRoad,
+  getDirectors,
+  getRegions,
+  getRoads,
+  performLogout,
+  refreshToken
+} from "@/utils/util.js";
 import {dateFormat} from "@/utils/helper.js";
 import router from "@/router/index.js";
 import {toRaw} from "vue";
@@ -268,23 +276,14 @@ export default {
   methods: {
     async getRoads() {
       try {
-        const response = await httpResource.get("/getRoads",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.roads = response.data
+        const response = await getRoads()
+        if (response.status===200) {
+          this.roads=response.data
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
         console.log(error)
-        try {
-          await refreshToken()
-          await this.getRoads()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
       }
     },
     setNotification(type,snack,text) {
@@ -293,73 +292,35 @@ export default {
       this.notificationText=text
       this.notification=true
     },
-    async getOrgs() {
-      try {
-        const response = await httpResource.get("/getOrgs",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.orgs = response.data
-        }
-      } catch (error) {
-        try {
-          await refreshToken()
-          await this.getOrgs()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
-      }
-    },
     async getRegions() {
       try {
-        const response = await httpResource.get("/getRegions",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.regions = response.data
+        const response = await getRegions()
+        if (response.status===200) {
+          this.regions=response.data
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.getRegions()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async addRoadFunc() {
-      console.log(this.addRoad)
       if (this.addRoad.name==''  || this.addRoad.region.id==null || this.addRoad.coordinates=='') {
         this.setNotification("error","var(--error)","Заполните все поля")
         return
       }
       try {
-
-        const response = await httpResource.post("/admin/createRoad",this.addRoad,{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
+        const response = await addRoadFunc(this.addRoad)
         if (response.status === 200) {
-          this.setNotification("success","success","Организация добавлена")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.addRoadFunc()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async editRoad() {
@@ -368,25 +329,17 @@ export default {
         return
       }
       try {
-        const response = await httpResource.post("/admin/editRoad",this.editRoadForm,{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
+        const response = await editRoad(this.editRoadForm)
         if (response.status === 200) {
-          this.setNotification("success","success","Изменения применены")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.editRoad()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     setEdit(item) {
@@ -401,25 +354,17 @@ export default {
       try {
         const data = new FormData()
         data.set("roadId",this.deleteId)
-        const response = await httpResource.post("/admin/deleteRoad",data,{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
+        const response = await deleteRoad(data)
         if (response.status === 200) {
-          this.setNotification("success","success","Изменения применены")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.deleteRoad()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     setDeleteId(item) {

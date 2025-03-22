@@ -110,7 +110,7 @@
 import httpResource from "@/http/httpResource.js";
 import { useCookies } from "vue3-cookies";
 import store from "@/store/index.js";
-import {editProfile, editProfileDir, getProfile, getProfileDir, performLogout, refreshToken} from "@/utils/util.js";
+import {activateUser, editProfileDir, getEmployees, getProfileDir, performLogout, refreshToken} from "@/utils/util.js";
 import {dateFormat} from "@/utils/helper.js";
 import router from "@/router/index.js";
 import {toRaw} from "vue";
@@ -164,7 +164,7 @@ export default {
     },
     async getProfile() {
       try {
-        const response = await getProfile()
+        const response = await getProfileDir()
         if (response.status===200) {
           this.userData=response.data
         } else {
@@ -180,7 +180,7 @@ export default {
         return
       }
       try {
-        const response = await editProfile(this.editForm)
+        const response = await editProfileDir(this.editForm)
         if (response.status === 200) {
           this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {

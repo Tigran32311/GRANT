@@ -79,11 +79,11 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
           ></v-time-picker>
         </v-menu>
       </v-text-field>
-      <v-text-field
-          label="Километр"
-          v-model="formModel.pointKM"
-          required
-      ></v-text-field>
+<!--      <v-text-field-->
+<!--          label="Километр"-->
+<!--          v-model="formModel.pointKM"-->
+<!--          required-->
+<!--      ></v-text-field>-->
       <v-text-field
           label="Количество полос"
           v-model="formModel.numberOfLanes"
@@ -123,6 +123,19 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
           filled
 
       ></v-autocomplete>
+      <div class="text-right" style="color: var(--warning)">* Здесь необходимо указать координаты, где проводился учет интенсивности. При копировании координаты из Яндекс карт первое число будет широта, второе долгота.</div>
+      <div class="d-md-flex flex-row ga-2">
+        <v-text-field
+            label="Широта"
+            v-model="formModel.shirota"
+            required
+        ></v-text-field>
+        <v-text-field
+            label="Долгота"
+            v-model="formModel.dolgota"
+            required
+        ></v-text-field>
+      </div>
       <v-checkbox v-model="formModel.visibleStatus" label="Доступен для просмотра пользователям?"></v-checkbox>
       <div class="text-subtitle-1">Загрузите видеоролик (доступные форматы: mp4, avi)*</div>
       <div class="mb-5">
@@ -152,7 +165,14 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
   import httpResource from "@/http/httpResource.js";
   import { useCookies } from "vue3-cookies";
   import store from "@/store/index.js";
-  import {performLogout, refreshToken} from "@/utils/util.js";
+  import {
+    addRoadFunc,
+    getRegions,
+    getRoads,
+    performLogout,
+    refreshToken,
+    sendFormUtil
+  } from "@/utils/util.js";
   import {dateFormat} from "@/utils/helper.js";
   import router from "@/router/index.js";
   const { cookies } = useCookies();
@@ -176,6 +196,8 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
         registrationStart: null,
         registrationEnd: null ,
         visibleStatus: true,
+        dolgota: null,
+        shirota: null,
         region: {
           id: null
         },
@@ -204,42 +226,26 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
       },
       async getRoads() {
         try {
-          const response = await httpResource.get("/getRoads",{
-            headers: {
-              Authorization: "Bearer "+store.getters.getAccessToken
-            }
-          });
-          if (response.status === 200) {
-            this.roads = response.data
+          const response = await getRoads()
+          if (response.status===200) {
+            this.roads=response.data
+          } else {
+            this.setNotification("error","var(--error)",response.message)
           }
         } catch (error) {
           console.log(error)
-          try {
-            await refreshToken()
-          } catch (error) {
-            performLogout()
-            await router.push("/")
-          }
         }
       },
       async getRegions() {
         try {
-          const response = await httpResource.get("/getRegions",{
-            headers: {
-              Authorization: "Bearer "+store.getters.getAccessToken
-            }
-          });
-          if (response.status === 200) {
-            this.regions = response.data
+          const response = await getRegions()
+          if (response.status===200) {
+            this.regions=response.data
+          } else {
+            this.setNotification("error","var(--error)",response.message)
           }
         } catch (error) {
           console.log(error)
-          try {
-            await refreshToken()
-          } catch (error) {
-            performLogout()
-            await router.push("/")
-          }
         }
       },
       async sendForm() {
@@ -250,27 +256,17 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
           this.formModel.registrationStart = this.formModel.registrationStart+":00"
           this.formModel.registrationEnd = this.formModel.registrationEnd+":00"
           data.append("videoData",new Blob([JSON.stringify(this.formModel)],{type: 'application/json'}))
-          const response = await httpResource.post("/video/upload",data,{
-            headers: {
-              'Accept': 'application/json',
-              Authorization: "Bearer "+store.getters.getAccessToken,
-              "Content-Type": "multipart/form-data",
-            }
-          });
-          if (response.status===200) {
+          const response = await sendFormUtil(data)
+          if (response.status === 200) {
             this.setNotification("success","success","Видеоролик успешно загружен и поставлен в очередь на обработку")
             const timeout = window.setTimeout(function () {
               location.reload()
             }, 800)
+          } else {
+            this.setNotification("error","var(--error)",response.message)
           }
-        } catch(error) {
-          try {
-            await refreshToken()
-            await this.sendForm()
-          } catch (error) {
-            performLogout()
-            await router.push("/")
-          }
+        } catch (error) {
+          console.log(error)
         }
       }
     },
