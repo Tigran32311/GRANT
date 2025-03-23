@@ -208,9 +208,9 @@ export async function getProfile() {
     }
 }
 
-export async function getMarkers(data) {
+export async function getMarkersMap(data) {
     try {
-        const response = await httpResource.get("/getMyDownloads",{
+        const response = await httpResource.get("/getMyDownloads?year="+data,{
             headers: {
                 Authorization: "Bearer "+store.getters.getAccessToken
             }
@@ -227,7 +227,7 @@ export async function getMarkers(data) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await getMarkers()
+                return await getMarkersMap(data)
             }
         } else {
             return apierror
@@ -281,7 +281,7 @@ export async function addDirector(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await addDirector()
+                return await addDirector(addData)
             }
         } else {
             return apierror
@@ -310,7 +310,7 @@ export async function sendFormUtil(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await sendForm()
+                return await sendFormUtil(addData)
             }
         } else {
             return apierror
@@ -337,7 +337,7 @@ export async function editProfileDir(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await editProfileDir()
+                return await editProfileDir(addData)
             }
         } else {
             return apierror
@@ -364,7 +364,7 @@ export async function editProfile(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await editProfile()
+                return await editProfile(addData)
             }
         } else {
             return apierror
@@ -391,7 +391,7 @@ export async function addUser(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await addDirector()
+                return await addDirector(addData)
             }
         } else {
             return apierror
@@ -418,7 +418,7 @@ export async function editUser(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await editUser()
+                return await editUser(addData)
             }
         } else {
             return apierror
@@ -445,7 +445,7 @@ export async function banUser(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await banUser()
+                return await banUser(addData)
             }
         } else {
             return apierror
@@ -472,7 +472,7 @@ export async function activateUser(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await activateUser()
+                return await activateUser(addData)
             }
         } else {
             return apierror
@@ -499,7 +499,7 @@ export async function editRoad(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await editRoad()
+                return await editRoad(addData)
             }
         } else {
             return apierror
@@ -526,7 +526,7 @@ export async function deleteRoad(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await editRoad()
+                return await editRoad(addData)
             }
         } else {
             return apierror
@@ -553,7 +553,7 @@ export async function addRoadFunc(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await addRoadFunc()
+                return await addRoadFunc(addData)
             }
         } else {
             return apierror
@@ -580,7 +580,7 @@ export async function addOrg(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await addOrg()
+                return await addOrg(addData)
             }
         } else {
             return apierror
@@ -607,7 +607,7 @@ export async function editOrg(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await editOrg()
+                return await editOrg(addData)
             }
         } else {
             return apierror
@@ -634,7 +634,7 @@ export async function deleteOrg(addData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await deleteOrg()
+                return await deleteOrg(addData)
             }
         } else {
             return apierror
@@ -662,7 +662,34 @@ export async function editDirector(editData) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await editDirector()
+                return await editDirector(editData)
+            }
+        } else {
+            return apierror
+        }
+    }
+}
+
+export async function generateDoc(fileName,genDoc) {
+    try {
+        const response = await httpResource.get("/genDoc?fileName="+fileName+"&trafficRegCardId="+genDoc,{
+            headers: {
+                Authorization: "Bearer "+store.getters.getAccessToken
+            }
+        });
+        if (response.status === 200) {
+            return response
+        }
+    } catch (error) {
+        const apierror = parseApierror(error);
+        if (apierror.statusCode === 401) {
+            const refresh = await refreshToken()
+            if (refresh!==200) {
+                performLogout();
+                await router.push("/")
+                location.reload()
+            } else {
+                return await generateDoc(fileName,genDoc)
             }
         } else {
             return apierror
@@ -689,7 +716,7 @@ export async function deleteDirector(deleteId) {
                 await router.push("/")
                 location.reload()
             } else {
-                return await deleteDirector()
+                return await deleteDirector(deleteId)
             }
         } else {
             return apierror

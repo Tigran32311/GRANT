@@ -4,6 +4,20 @@ import {YandexMapDefaultMarker} from "vue-yandex-maps";
 </script>
 
 <template>
+  <v-snackbar
+      close-on-content-click
+      timeout="-1"
+      location="top"
+      v-model="notification"
+      :color="notificationSnack"
+  >
+    <v-alert
+        :text="notificationText"
+        closable
+        :type="notificationType"
+        class="ma-0 pa-0 w-100 h-100"
+    ></v-alert>
+  </v-snackbar>
   <v-row class="flex-column">
     <v-col class="d-flex justify-center align-center flex-column text-center">
       <v-btn
@@ -21,6 +35,7 @@ import {YandexMapDefaultMarker} from "vue-yandex-maps";
           v-model="year"
           :items=years
           min-width="250px"
+          @update:model-value="getMarkers"
 
           chips
           deletable-chips
@@ -63,51 +78,71 @@ import {YandexMapDefaultMarker} from "vue-yandex-maps";
           <v-col class="max-h-1">
             <div class="d-flex flex-row">
               <div class="text-subtitle-1 text-left px-2 py-1" style="background-color: var(--light-green)">Дата</div>
-              <div class="text-subtitle-1 text-left px-2 py-1">21.02.2025</div>
+              <div class="text-subtitle-1 text-left px-2 py-1">{{ chosenMarker.registrationDate ? chosenMarker.registrationDate : "Выберите точку"}}</div>
             </div>
           </v-col>
           <v-col class="max-h-1">
             <div class="d-flex flex-row">
               <div class="text-subtitle-1 text-left px-2 py-1" style="background-color: var(--light-green)">Местоположение</div>
-              <div class="text-subtitle-1 text-left px-2 py-1">Нет положения</div>
+              <div class="text-subtitle-1 text-left px-2 py-1">{{ chosenMarker.region.name ? chosenMarker.region.name+"," : "Выберите точку"}} {{chosenMarker.road.name}}</div>
             </div>
           </v-col>
           <v-col class="h-80">
             <div style="background-color: var(--light-green);">
               <div style="justify-content: space-between" class="d-flex">
                 <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">Местоположение</div>
-                <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">Нет положения</div>
+                <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">{{ chosenMarker.region.name ? chosenMarker.region.name+"," : "Выберите точку"}} {{chosenMarker.road.name}}</div>
               </div>
               <div class="mx-5 d-flex flex-column ga-1 pb-5">
                 <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
                   <div class="text-subtitle-1 text-left py-2 px-4">Автопоезд больше 30 тонн</div>
-                  <div class="text-subtitle-1 text-center py-2 pr-15">45</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.roadTrainOver30TonsQuantity ? chosenMarker.roadTrainOver30TonsQuantity : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Автопоезд больше 20 тонн</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.roadTrain20TonsQuantity ? chosenMarker.roadTrain20TonsQuantity : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Автобусы</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.busQuantity ? chosenMarker.busQuantity : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Грузовики больше 14 тонн</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.truckOver14TonsQuantity ? chosenMarker.truckOver14TonsQuantity : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Грузовики до 14 тонн</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.truckUpTo14Tons ? chosenMarker.truckUpTo14Tons : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Грузовики до 8 тонн</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.truckUpTo8Tons ? chosenMarker.truckUpTo8Tons : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Грузовики до 6 тонн</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.truckUpTo6Tons ? chosenMarker.truckUpTo6Tons : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Грузовики до 2 тонн</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.truckUpTo2Tons ? chosenMarker.truckUpTo2Tons : 0}}</div>
+                </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
+                  <div class="text-subtitle-1 text-left py-2 px-4">Грузовики до 8 тонн</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{chosenMarker.truckUpTo8Tons ? chosenMarker.truckUpTo8Tons : 0}}</div>
                 </div>
                 <div style="justify-content: space-between; background-color: white" class="d-flex">
-                  <div class="text-subtitle-1 text-left py-2 px-4">Легковая машина</div>
-                  <div class="text-subtitle-1 text-center py-2 pr-15">45</div>
-                </div>
-                <div style="justify-content: space-between; background-color: white" class="d-flex">
-                  <div class="text-subtitle-1 text-left py-2 px-4">Легковая машина</div>
-                  <div class="text-subtitle-1 text-center py-2 pr-15">45</div>
-                </div>
-                <div style="justify-content: space-between; background-color: white" class="d-flex">
-                  <div class="text-subtitle-1 text-left py-2 px-4">Легковая машина</div>
-                  <div class="text-subtitle-1 text-center py-2 pr-15">45</div>
-                </div>
-                <div style="justify-content: space-between; background-color: white" class="d-flex">
-                  <div class="text-subtitle-1 text-left py-2 px-4">Легковая машина</div>
-                  <div class="text-subtitle-1 text-center py-2 pr-15">45</div>
+                  <div class="text-subtitle-1 text-left py-2 px-4">Мотоциклы и мопеды</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{ chosenMarker.motorcyclesAndMopedsQuantity ? chosenMarker.motorcyclesAndMopedsQuantity : 0}}</div>
                 </div>
                 <div style="justify-content: space-between; background-color: white" class="d-flex mt-2">
                   <div style="color: var(--button-green)" class="text-subtitle-1 font-weight-bold text-left py-2 px-4">Итого</div>
-                  <div style="color: var(--button-green)" class="text-subtitle-1 text-center font-weight-bold py-2 pr-15">45</div>
+                  <div style="color: var(--button-green)" class="text-subtitle-1 text-center font-weight-bold py-2 pr-15">{{ chosenMarker.allQuantity ? chosenMarker.allQuantity : 0}}</div>
                 </div>
               </div>
             </div>
           </v-col>
           <v-col>
-            <v-btn class="d-flex justify-start text-none rounded" color="var(--button-green)" style="color: white">Создать отчет</v-btn>
+            <v-btn class="d-flex justify-start text-none rounded" color="var(--button-green)" style="color: white" @click="createReport">Создать отчет</v-btn>
           </v-col>
         </v-row>
       </v-container>
@@ -125,7 +160,7 @@ import {
 } from "vue-yandex-maps";
 import httpResource from "@/http/httpResource.js";
 import store from "@/store/index.js";
-import {getMarkers, getRegions, performLogout, refreshToken} from "@/utils/util.js";
+import {generateDoc, getMarkersMap, getRegions, performLogout, refreshToken} from "@/utils/util.js";
 import router from "@/router/index.js";
 
 export default {
@@ -150,44 +185,71 @@ export default {
       // },
     ],
     years: [],
-    year: 2025,
+    year: new Date().getFullYear(),
     chosenMarker: {
       id: null,
-      registration_date: null,
-      bus_quantity: null,
-      road_train_20_tons_quantity: null,
-      small_road_train_quantity: null,
-      road_train_over_30_tons_quantity: null,
-      truck_over_14_tons_quantity: null,
-      truck_up_to_2_tons: null,
-      truck_up_to_6_tons: null,
-      truck_up_to_8_tons: null,
-      truck_up_to_14_tons: null,
-      passenger_car_quantity: null,
-      motorcycles_and_mopeds_quantity: null,
-      all_quantity: null,
+      registrationDate: null,
+      registrationEnd: null,
+      registrationStart: null,
+      busQuantity: null,
+      roadTrain20TonsQuantity: null,
+      smallRoadTrainQuantity: null,
+      roadTrainOver30TonsQuantity: null,
+      truckOver14TonsQuantity: null,
+      truckUpTo2Tons: null,
+      truckUpTo6Tons: null,
+      truckUpTo8Tons: null,
+      truckUpTo14Tons: null,
+      passengerCarQuantity: null,
+      pointKM: null,
+      motorcyclesAndMopedsQuantity: null,
+      inspectorFio: null,
+      allQuantity: null,
+      numberOfLanes: null,
+      region: {
+        name: null
+      },
       road: {
         id: null,
         name: null,
       }
     },
+    notification: false,
+    notificationText: "Успешно",
+    notificationType: "success",
+    notificationSnack: "",
   }),
   created() {
     this.getMarkers()
     this.years = this.getYears()
   },
   methods: {
+    setNotification(type,snack,text) {
+      this.notificationType=type
+      this.notificationSnack=snack
+      this.notificationText=text
+      this.notification=true
+    },
     async getMarkers() {
       try {
-        const response = await getMarkers()
+        if (this.year==="" || this.year===null) {
+          this.year=2025
+        }
+        const response = await getMarkersMap(this.year)
         if (response.status===200) {
+          this.markers = []
           let that = this
           response.data.forEach(function (r) {
             that.markers.push({
-              coordinates: r.road.coordinates.split(',').map(Number),
+              // coordinates: r.road.coordinates.split(',').map(Number),
+              coordinates: [r.dolgota,r.shirota].map(Number),
               draggable: false,
               color: "var(--button-green)",
-              dataId: "",
+              dataId: r.id,
+              onClick: ()=>{
+                console.log(1)
+                that.setMarker(r)
+              }
             })
           })
         } else {
@@ -199,57 +261,33 @@ export default {
     },
     getYears() {
       var currentYear = new Date().getFullYear(), years = [];
-      let startYear = 2025;
+      let startYear = 2024;
       while ( startYear <= currentYear ) {
         years.push(startYear++);
       }
       return years;
-    }
-  }
-}
-
-async function getCard(dataId) {
-  try {
-    const response = await httpResource.get("/getIntensity?trafficRegCardId=" + dataId, {
-      headers: {
-        Authorization: "Bearer " + store.getters.getAccessToken
-      }
-    });
-    // this.markers.push({
-    //   coordinates: response.data[0].road.coordinates.split(',').map(Number),
-    //   draggable: true,
-    //   color: "var(--button-green)",
-    // })
-    if (response.status === 200) {
-      let that = this
-      response.data.forEach(function (r) {
-        that.markers.push({
-          coordinates: r.road.coordinates.split(',').map(Number),
-          draggable: false,
-          color: "var(--button-green)",
-          dataId: "",
-        })
-      })
-      // this.markers = that
-      console.log(this.markers)
-    }
-  } catch (error) {
-    try {
-      if (error.status === 401) {
-        const refresh = await refreshToken()
-        if (refresh === 200) {
-          await this.getMarkers()
-        } else {
-          await router.push("/")
-          location.reload()
-        }
+    },
+    setMarker(data) {
+      this.chosenMarker = data
+    },
+    async createReport() {
+      if (this.chosenMarker.id===null) {
+        this.setNotification("error","var(--error)","Выберите метку на карте, для формирования отчета по нему")
+        return
       } else {
-        this.setNotification("error", "var(--error)", error.response.data['message'])
+        this.notification=false
       }
-    } catch (error) {
-      // performLogout()
-      // await router.push("/")
-      // location.reload()
+      try {
+        const fileName ="report_" + new Date().toString()
+        const response = await generateDoc(fileName,this.chosenMarker.id)
+        if (response.status===200) {
+          console.log(response)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
+        }
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }
