@@ -18,6 +18,7 @@ import VlsuIcon from "@/components/icons/VlsuIcon.vue";
 import VueCookies from 'vue3-cookies'
 import { globalCookiesConfig } from "vue3-cookies";
 import {ru} from "vuetify/locale";
+import VlsuIconFooter from "@/components/icons/VlsuIconFooter.vue";
 
 const vuetify = createVuetify({
     components,
@@ -31,6 +32,7 @@ const vuetify = createVuetify({
         //     },
         // },
         custom: VlsuIcon,
+        footer: VlsuIconFooter,
         sets: {
             mdi,
         },

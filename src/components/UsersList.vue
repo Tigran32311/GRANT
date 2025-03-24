@@ -75,6 +75,7 @@
               color="error"
               style="color: white"
               @click="setBanId(item)"
+              v-if="item.status==='ACTIVE'"
           >
           </v-btn>
           <v-btn
@@ -83,6 +84,7 @@
               color="success"
               style="color: white"
               @click="setActivateId(item)"
+              v-if="item.status==='PASSIVE'"
           >
           </v-btn>
         </div>
@@ -290,7 +292,17 @@
 import httpResource from "@/http/httpResource.js";
 import { useCookies } from "vue3-cookies";
 import store from "@/store/index.js";
-import {performLogout, refreshToken} from "@/utils/util.js";
+import {
+  activateUser,
+  addRoadFunc,
+  addUser,
+  banUser,
+  editUser,
+  getEmployees,
+  getRegions,
+  performLogout,
+  refreshToken
+} from "@/utils/util.js";
 import {dateFormat} from "@/utils/helper.js";
 import router from "@/router/index.js";
 import {toRaw} from "vue";
@@ -351,25 +363,17 @@ export default {
         return
       }
       try {
-        const response = await httpResource.post("/director/createEmp", this.addForm, {
-          headers: {
-            Authorization: "Bearer " + store.getters.getAccessToken
-          }
-        });
+        const response = await addUser(this.addForm)
         if (response.status === 200) {
-          this.setNotification("success", "success", "Успешно")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.addUser()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async editUser() {
@@ -378,25 +382,17 @@ export default {
         return
       }
       try {
-        const response = await httpResource.post("/director/editEmp", this.editForm, {
-          headers: {
-            Authorization: "Bearer " + store.getters.getAccessToken
-          }
-        });
+        const response = await editUser(this.editForm)
         if (response.status === 200) {
-          this.setNotification("success", "success", "Изменения применены")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.editUser()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     setEdit(item) {
@@ -412,25 +408,17 @@ export default {
       try {
         const data = new FormData()
         data.append('empId',this.banId)
-        const response = await httpResource.post("/director/banEmp", data, {
-          headers: {
-            Authorization: "Bearer " + store.getters.getAccessToken
-          }
-        });
+        const response = await banUser(data)
         if (response.status === 200) {
-          this.setNotification("success", "success", "Изменения применены")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.banUser()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async activateUser() {
@@ -441,25 +429,17 @@ export default {
       try {
         const data = new FormData()
         data.append('empId',this.activeId)
-        const response = await httpResource.post("/director/activateEmp", data, {
-          headers: {
-            Authorization: "Bearer " + store.getters.getAccessToken
-          }
-        });
+        const response = await activateUser(data)
         if (response.status === 200) {
-          this.setNotification("success", "success", "Изменения применены")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.activateUser()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     setBanId(item) {
@@ -472,22 +452,14 @@ export default {
     },
     async getEmployees() {
       try {
-        const response = await httpResource.get("/director/getEmps", {
-          headers: {
-            Authorization: "Bearer " + store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.emps = response.data
+        const response = await getEmployees()
+        if (response.status===200) {
+          this.emps=response.data
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.getEmployees()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
   }

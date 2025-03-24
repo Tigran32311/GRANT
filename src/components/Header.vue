@@ -183,18 +183,21 @@ import {tr} from "vuetify/locale";
             v-model="registerForm.email"
             label="Почта"
             type="email"
+            :rules="[v => !!v || 'Поле обязательно']"
         ></v-text-field>
 
         <v-text-field
             v-model="registerForm.password"
             label="Пароль"
             type="password"
+            :rules="[v => !!v || 'Поле обязательно']"
         ></v-text-field>
 
         <v-text-field
             label="Подтвердите пароль"
             type="confirm_password"
             v-model="registerForm.confirm_password"
+            :rules="[v => !!v || 'Поле обязательно']"
         ></v-text-field>
         <v-btn variant="text" class="text-subtitle-1 pa-0 mb-2" @click="registerDialog=false; loginDialog=true">Уже есть аккаунт? Войти</v-btn>
         <v-btn
@@ -296,10 +299,8 @@ import {tr} from "vuetify/locale";
       isEmployee: false,
     }),
     mounted() {
-      console.log("fsf"+this.isLogin)
       if (this.$store.getters.getIsAuthenticated==='true') {
         this.isLogin = true
-        console.log(this.$store.getters.getCurrentUser.role)
         switch (this.$store.getters.getCurrentUser.role) {
           case 'ADMIN':
             this.isAdmin=true
@@ -340,19 +341,29 @@ import {tr} from "vuetify/locale";
           return;
         }
         try {
-          const response = await httpResource.post("/auth/signin", loginRequest); 
+          const response = await httpResource.post("/auth/signin", loginRequest,{
+            headers: {
+
+            }
+          });
           if (response.status === 200) {
             store.commit("setIsAuthenticated", 'true');
             store.commit("setAccessToken", response.data.accessToken);
             store.commit("setRefreshToken", response.data.refreshToken);
             store.commit("setCurrentUser", response.data.userData);
+            this.setNotification("success","success","Успешно")
             location.reload()
           }
         } catch (error) {
-          this.setNotification("error","var(--error)","Произошла ошибка")
+          // this.setNotification("error","var(--error)","Произошла ошибка. Проверьте введенные данные")
           const apierror = parseApierror(error);
-          this.displayErrorMessage = true;
-          this.errorMessage = apierror.message;
+          if (apierror.message===undefined) {
+            if (error.response.data==='Please, check your email and activate account.') {
+              this.setNotification("error","var(--error)","Активируйте аккаунт, вам отправлено письмо на почту.")
+            }
+          } else {
+            this.setNotification("error","var(--error)",apierror.message)
+          }
         }
       },
       async register() {
@@ -368,12 +379,10 @@ import {tr} from "vuetify/locale";
           email: this.registerForm.email,
           password: this.registerForm.password,
         };
-
         if (registerRequest.firstName==="" || registerRequest.surname==="" || registerRequest.email==="" || registerRequest.password==="") {
           this.setNotification("error","var(--error)","Заполните все поля")
           return;
         }
-
         try {
           const response = await httpResource.post("/auth/signup", registerRequest);
           if (response.status === 200) {
@@ -382,15 +391,14 @@ import {tr} from "vuetify/locale";
           }
         } catch (error) {
           const apierror = parseApierror(error);
-          this.displayErrorMessage = true;
-          this.errorMessage = apierror.message;
-          this.setNotification("error","var(--error)","Произошла ошибка, проверьте введенные данные")
+          this.setNotification("error","var(--error)",apierror.message)
         }
       },
       async logout() {
         performLogout();
         this.logoutDialog=false
         await router.push("/")
+        location.reload()
       },
     },
     components() {

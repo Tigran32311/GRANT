@@ -200,7 +200,16 @@
 import httpResource from "@/http/httpResource.js";
 import { useCookies } from "vue3-cookies";
 import store from "@/store/index.js";
-import {performLogout, refreshToken} from "@/utils/util.js";
+import {
+  addDirector,
+  addOrg,
+  deleteOrg,
+  editOrg,
+  getOrgs,
+  getRegions,
+  performLogout,
+  refreshToken
+} from "@/utils/util.js";
 import {dateFormat} from "@/utils/helper.js";
 import router from "@/router/index.js";
 import {toRaw} from "vue";
@@ -250,71 +259,45 @@ export default {
     },
     async getOrgs() {
       try {
-        const response = await httpResource.get("/getOrgs",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.orgs = response.data
+        const response = await getOrgs()
+        if (response.status===200) {
+          this.orgs=response.data
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.getOrgs()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async getRegions() {
       try {
-        const response = await httpResource.get("/getRegions",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.regions = response.data
+        const response = await getRegions()
+        if (response.status===200) {
+          this.regions=response.data
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.getRegions()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async addOrg() {
-      console.log(this.addOrgForm)
       if (this.addOrgForm.name==''  || this.addOrgForm.region.id==null) {
         this.setNotification("error","var(--error)","Заполните все поля")
         return
       }
       try {
-
-        const response = await httpResource.post("/admin/createOrg",this.addOrgForm,{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
+        const response = await addOrg(this.addOrgForm)
         if (response.status === 200) {
           this.setNotification("success","success","Организация добавлена")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.addOrg()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async editOrg() {
@@ -323,25 +306,17 @@ export default {
         return
       }
       try {
-        const response = await httpResource.post("/admin/editOrg",this.editOrgForm,{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
+        const response = await editOrg(this.editOrgForm)
         if (response.status === 200) {
           this.setNotification("success","success","Изменения применены")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.editOrg()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     setEdit(item) {
@@ -356,25 +331,17 @@ export default {
       try {
         const data = new FormData()
         data.set("orgId",this.deleteId)
-        const response = await httpResource.post("/admin/deleteOrg",data,{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
+        const response = await deleteOrg(data)
         if (response.status === 200) {
           this.setNotification("success","success","Изменения применены")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          await refreshToken()
-          await this.deleteOrg()
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     setDeleteId(item) {

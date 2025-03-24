@@ -1,5 +1,6 @@
 import axios from "axios";
 import {performLogout, refreshToken} from "@/utils/util.js";
+import router from "@/router/index.js";
 
 const isHandlerEnabled = (config = {}) => {
     return !(config.hasOwnProperty("handlerEnabled") && !config.handlerEnabled);
@@ -33,12 +34,14 @@ const errorHandler = error => {
         console.log("Error Interceptor", error);
 
         if (error.response) {
-            if (error.response.status === 401) {
-                const refresh = refreshToken()
-                if (refresh!==200) {
-                    performLogout();
-                }
-            }
+            // if (error.response.status === 401) {
+                // const refresh = refreshToken()
+                // if (refresh!==200) {
+                    // performLogout();
+                    // router.push("/")
+                    // location.reload()
+                // }
+            // }
         }
     }
     return Promise.reject({ ...error });

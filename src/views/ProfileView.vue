@@ -2,14 +2,14 @@
 </script>
 
 <template>
-  <Profile></Profile>
+  <ProfileDir></ProfileDir>
 </template>
 
 <script>
-import Profile from "@/components/Profile.vue";
+import ProfileDir from "@/components/ProfileDir.vue";
 export default {
   components: {
-    Profile,
+    ProfileDir,
   }
 }
 </script>

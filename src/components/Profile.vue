@@ -110,7 +110,7 @@
 import httpResource from "@/http/httpResource.js";
 import { useCookies } from "vue3-cookies";
 import store from "@/store/index.js";
-import {performLogout, refreshToken} from "@/utils/util.js";
+import {editProfile, editProfileDir, getProfile, getProfileDir, performLogout, refreshToken} from "@/utils/util.js";
 import {dateFormat} from "@/utils/helper.js";
 import router from "@/router/index.js";
 import {toRaw} from "vue";
@@ -164,32 +164,14 @@ export default {
     },
     async getProfile() {
       try {
-        const response = await httpResource.get("/ph_per/getProfileData",{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
-        if (response.status === 200) {
-          this.userData = response.data
-          this.editForm = response.data
-          this.editForm.password=null
+        const response = await getProfile()
+        if (response.status===200) {
+          this.userData=response.data
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          if (error.status==401) {
-            const refresh = await refreshToken()
-            if (refresh==200) {
-              await this.getProfile()
-            } else {
-              await router.push("/")
-            }
-          } else {
-            this.setNotification("error","var(--error)",error.response.data['message'])
-          }
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
     async editUser() {
@@ -198,33 +180,17 @@ export default {
         return
       }
       try {
-        const response = await httpResource.post("/ph_per/editProfile",this.editForm,{
-          headers: {
-            Authorization: "Bearer "+store.getters.getAccessToken
-          }
-        });
+        const response = await editProfile(this.editForm)
         if (response.status === 200) {
-          this.setNotification("success","success","Изменения применены")
+          this.setNotification("success","success","Успешно")
           const timeout = window.setTimeout(function () {
             location.reload()
           }, 800)
+        } else {
+          this.setNotification("error","var(--error)",response.message)
         }
       } catch (error) {
-        try {
-          if (error.status==401) {
-            const refresh = await refreshToken()
-            if (refresh==200) {
-              await this.editUser()
-            } else {
-              await router.push("/")
-            }
-          } else {
-            this.setNotification("error","var(--error)",error.response.data['message'])
-          }
-        } catch (error) {
-          performLogout()
-          await router.push("/")
-        }
+        console.log(error)
       }
     },
   },

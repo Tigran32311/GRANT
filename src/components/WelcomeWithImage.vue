@@ -1,5 +1,6 @@
 <script setup>
 
+import router from "@/router/index.js";
 </script>
 
 <template>
@@ -8,7 +9,7 @@
       <!--          <v-img src="/src/assets/car.jpg" class="rounded-sm center__img" style="width: 2500px" cover>-->
       <div class="text-h1 pa-15">ИНТЕНСИВОСЧЕТ</div>
       <div class="text-h6">Загрузите видео и получите отчет по нему</div>
-      <div><v-btn text="Загрузить видео" class="text-none" style="color: var(--button-green)"></v-btn></div>
+      <div><v-btn text="Загрузить видео" class="text-none" style="color: var(--button-green)" @click="router.push('/create_report')"></v-btn></div>
       <!--          </v-img>-->
     </v-col>
   </v-row>
@@ -18,7 +19,7 @@
     <v-col class="d-flex justify-center flex-column align-center">
       <div class="text-h5 pa-15">ИНТЕНСИВОСЧЕТ</div>
       <div class="text-h6">Загрузите видео и получите отчет по нему</div>
-      <div><v-btn text="Загрузить видео" class="text-none" style="color: var(--button-green)"></v-btn></div>
+      <div><v-btn text="Загрузить видео" class="text-none" style="color: var(--button-green)" @click="router.push('/create_report')"></v-btn></div>
     </v-col>
   </v-row>
 </template>
