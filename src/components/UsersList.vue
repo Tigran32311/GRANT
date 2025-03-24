@@ -18,7 +18,7 @@
     ></v-alert>
   </v-snackbar>
   <div class="text-h4 font-weight-bold pa-10">
-    Список пользователей
+    Список работников
   </div>
   <div class="d-flex justify-end">
     <v-btn
@@ -28,7 +28,7 @@
         type="submit"
         @click="createDialog=true"
     >
-      Добавить пользователя
+      Добавить работника
     </v-btn>
   </div>
   <v-table
@@ -102,7 +102,7 @@
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
       <v-form class="pa-15 w-100" @submit.prevent="addUser()" ref="registerFormRef">
-        <div class="text-h6 text-center">Добавить проверяющего</div>
+        <div class="text-h6 text-center">Добавить работника организации</div>
         <v-text-field
             v-model="addForm.surname"
             label="Фамилия"
@@ -163,7 +163,7 @@
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
       <v-form class="pa-15 w-100" @submit.prevent="editUser()">
-        <div class="text-h6 text-center">Редактирование проверяющего</div>
+        <div class="text-h6 text-center">Редактирование директора организации</div>
         <v-text-field
             v-model="editForm.surname"
             label="Фамилия"

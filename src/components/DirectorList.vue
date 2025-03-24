@@ -28,7 +28,7 @@
         type="submit"
         @click="createDirDialog=true"
     >
-      Добавить проверяющего
+      Добавить директора организации
     </v-btn>
   </div>
   <v-table
@@ -92,7 +92,7 @@
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
       <v-form class="pa-15 w-100" @submit.prevent="addDirector()" ref="registerFormRef">
-        <div class="text-h6 text-center">Добавить проверяющего</div>
+        <div class="text-h6 text-center">Добавить директора организации</div>
         <v-text-field
             v-model="addDirForm.surname"
             label="Фамилия"
@@ -164,7 +164,7 @@
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
       <v-form class="pa-15 w-100" @submit.prevent="editDir()">
-        <div class="text-h6 text-center">Редактирование проверяющего</div>
+        <div class="text-h6 text-center">Редактирование директора организации</div>
         <v-text-field
             v-model="editDirForm.surname"
             label="Фамилия"

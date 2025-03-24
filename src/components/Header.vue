@@ -35,7 +35,7 @@ import {tr} from "vuetify/locale";
               @click="router.replace('/dir/users')"
               v-if="isDirector"
           >
-            Пользователи
+            Работники организации
           </v-btn>
           <v-btn class="text-none" v-if="!isAdmin" @click="router.replace('/')">
             О нас
@@ -47,7 +47,7 @@ import {tr} from "vuetify/locale";
               @click="router.replace('/admin/directors')"
               v-if="isAdmin"
           >
-            Проверяющие
+            Директора организаций
           </v-btn>
           <v-btn
               class="text-none"
@@ -83,7 +83,7 @@ import {tr} from "vuetify/locale";
             </template>
             <v-list min-width="300" nav>
               <v-list-item link v-if="isAdmin" @click="router.replace('/admin/directors')">
-                <v-list-item-title>Проверяющие</v-list-item-title>
+                <v-list-item-title>Директора организаций</v-list-item-title>
               </v-list-item>
               <v-list-item link v-if="isAdmin" @click="router.replace('/admin/roads')">
                 <v-list-item-title>Точки учета</v-list-item-title>

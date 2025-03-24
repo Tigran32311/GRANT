@@ -95,7 +95,7 @@
         <div class="text-h6 text-center">Добавление дороги</div>
         <v-text-field
             v-model="addRoad.name"
-            label="Наименование организации"
+            label="Наименование дороги"
             type="text"
             :rules="[v => !!v || 'Поле обязательно']"
             required
@@ -142,7 +142,7 @@
         class="d-flex flex-row align-center justify-center" height="100%" style="min-width: 50%"
     >
       <v-form class="pa-15 w-100" @submit.prevent="editRoad()">
-        <div class="text-h6 text-center">Редактирование организации</div>
+        <div class="text-h6 text-center">Редактирование дороги</div>
         <v-text-field
             v-model="editRoadForm.name"
             label="Наименование дороги"
@@ -178,7 +178,7 @@
             style="color: white"
             type="submit"
         >
-          Добавить
+          Редактировать
         </v-btn>
       </v-form>
     </v-card>

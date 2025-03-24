@@ -30,7 +30,7 @@ import router from "@/router/index.js";
             color="var(--light-green)"
         ><div class="text-subtitle-1">Свяжитесь с нами</div></v-btn>
         <div class="text-h4">pochta@mail.ru</div>
-        <div class="text-h4">+7 (920) 104-69-78</div>
+        <div class="text-h4">+7 (999) 999-99-99</div>
       </v-col>
     </v-row>
   </v-container>

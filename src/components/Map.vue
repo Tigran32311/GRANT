@@ -90,8 +90,9 @@ import {YandexMapDefaultMarker} from "vue-yandex-maps";
           <v-col class="h-80">
             <div style="background-color: var(--light-green);">
               <div style="justify-content: space-between" class="d-flex">
-                <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">Местоположение</div>
-                <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">{{ chosenMarker.region.name ? chosenMarker.region.name+"," : "Выберите точку"}} {{chosenMarker.road.name}}</div>
+                <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">Тип транспортного средства</div>
+                <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">Количество транспортных средств</div>
+<!--                <div class="text-subtitle-1 font-weight-bold text-left py-3 px-8">{{ chosenMarker.region.name ? chosenMarker.region.name+"," : "Выберите точку"}} {{chosenMarker.road.name}}</div>-->
               </div>
               <div class="mx-5 d-flex flex-column ga-1 pb-5">
                 <div style="justify-content: space-between; background-color: white" class="d-flex rounded-lg">
