@@ -674,8 +674,9 @@ export async function generateDoc(fileName,genDoc) {
     try {
         const response = await httpResource.get("/genDoc?fileName="+fileName+"&trafficRegCardId="+genDoc,{
             headers: {
-                Authorization: "Bearer "+store.getters.getAccessToken
-            }
+                Authorization: "Bearer "+store.getters.getAccessToken,
+            },
+            responseType: 'blob',
         });
         if (response.status === 200) {
             return response
@@ -690,6 +691,33 @@ export async function generateDoc(fileName,genDoc) {
                 location.reload()
             } else {
                 return await generateDoc(fileName,genDoc)
+            }
+        } else {
+            return apierror
+        }
+    }
+}
+
+export async function getIntensity(traficId) {
+    try {
+        const response = await httpResource.get("/getIntensity?trafficRegCardId="+traficId,{
+            headers: {
+                Authorization: "Bearer "+store.getters.getAccessToken,
+            },
+        });
+        if (response.status === 200) {
+            return response
+        }
+    } catch (error) {
+        const apierror = parseApierror(error);
+        if (apierror.statusCode === 401) {
+            const refresh = await refreshToken()
+            if (refresh!==200) {
+                performLogout();
+                await router.push("/")
+                location.reload()
+            } else {
+                return await getIntensity(traficId)
             }
         } else {
             return apierror

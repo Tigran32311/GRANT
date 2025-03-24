@@ -84,7 +84,7 @@ import {YandexMapDefaultMarker} from "vue-yandex-maps";
           <v-col class="max-h-1">
             <div class="d-flex flex-row">
               <div class="text-subtitle-1 text-left px-2 py-1" style="background-color: var(--light-green)">Местоположение</div>
-              <div class="text-subtitle-1 text-left px-2 py-1">{{ chosenMarker.region.name ? chosenMarker.region.name+"," : "Выберите точку"}} {{chosenMarker.road.name}}</div>
+              <div class=" text-left px-2 py-1">{{ chosenMarker.region.name ? chosenMarker.region.name+"," : "Выберите точку"}} {{chosenMarker.road.name}}</div>
             </div>
           </v-col>
           <v-col class="h-80">
@@ -138,11 +138,20 @@ import {YandexMapDefaultMarker} from "vue-yandex-maps";
                   <div style="color: var(--button-green)" class="text-subtitle-1 font-weight-bold text-left py-2 px-4">Итого</div>
                   <div style="color: var(--button-green)" class="text-subtitle-1 text-center font-weight-bold py-2 pr-15">{{ chosenMarker.allQuantity ? chosenMarker.allQuantity : 0}}</div>
                 </div>
+                <div style="justify-content: space-between; background-color: white" class="d-flex mt-2" v-if="isIntensityCard">
+                    <div class="text-subtitle-1 text-left py-2 px-4">Итоговая интенсивность</div>
+                    <div class="text-subtitle-1 text-center py-2 pr-15">{{ intensityCard.result ? intensityCard.result : 0}}</div>
+                  </div>
+                  <div style="justify-content: space-between; background-color: white" class="d-flex" v-if="isIntensityCard">
+                    <div class="text-subtitle-1 text-left py-2 px-4">Суточная интенсивность</div>
+                  <div class="text-subtitle-1 text-center py-2 pr-15">{{ intensityCard.day ? intensityCard.day : 0}}</div>
+                </div>
               </div>
             </div>
           </v-col>
-          <v-col>
+          <v-col class="d-flex flex-column flex-md-row ga-5">
             <v-btn class="d-flex justify-start text-none rounded" color="var(--button-green)" style="color: white" @click="createReport">Создать отчет</v-btn>
+            <v-btn class="d-flex justify-start text-none rounded" color="var(--button-green)" style="color: white" @click="checkIntensivity">Рассчитать интенсивность</v-btn>
           </v-col>
         </v-row>
       </v-container>
@@ -160,7 +169,7 @@ import {
 } from "vue-yandex-maps";
 import httpResource from "@/http/httpResource.js";
 import store from "@/store/index.js";
-import {generateDoc, getMarkersMap, getRegions, performLogout, refreshToken} from "@/utils/util.js";
+import {generateDoc, getIntensity, getMarkersMap, getRegions, performLogout, refreshToken} from "@/utils/util.js";
 import router from "@/router/index.js";
 
 export default {
@@ -168,13 +177,13 @@ export default {
   components: {YandexMapDefaultFeaturesLayer, YandexMapMarker, YandexMapDefaultSchemeLayer, YandexMap,YandexMapZoomControl},
   data: () => ({
     markers: [
-      {
-        coordinates: [40.393079, 56.134054],
-        draggable: false,
-        color: "var(--button-green)",
-        onClick: ()=>{getCard("48e40ca2-08d0-4f57-bd94-8d9599b19acf")},
-        // dataId: ,
-      },
+      // {
+      //   coordinates: [40.393079, 56.134054],
+      //   draggable: false,
+      //   color: "var(--button-green)",
+      //   onClick: ()=>{getCard("48e40ca2-08d0-4f57-bd94-8d9599b19acf")},
+      //   // dataId: ,
+      // },
       // {
       //   coordinates: [42.047150, 55.581302],
       //   draggable: false,
@@ -218,6 +227,11 @@ export default {
     notificationText: "Успешно",
     notificationType: "success",
     notificationSnack: "",
+    isIntensityCard: false,
+    intensityCard: {
+      result: null,
+      day: null,
+    }
   }),
   created() {
     this.getMarkers()
@@ -247,8 +261,8 @@ export default {
               color: "var(--button-green)",
               dataId: r.id,
               onClick: ()=>{
-                console.log(1)
                 that.setMarker(r)
+                that.isIntensityCard=false
               }
             })
           })
@@ -277,11 +291,39 @@ export default {
       } else {
         this.notification=false
       }
+      let date = new Date();
       try {
-        const fileName ="report_" + new Date().toString()
+        // const fileName ="report_" + date.getFullYear() + date.getMonth() + date.getDate() + this.chosenMarker.id;
+        const fileName = "file"
         const response = await generateDoc(fileName,this.chosenMarker.id)
         if (response.status===200) {
-          console.log(response)
+          const objectURL = URL.createObjectURL(response.data);
+          let link = document.createElement('a');
+          link.href = objectURL
+          link.download = fileName+".docx";
+          link.click();
+        } else {
+          this.setNotification("error","var(--error)",response.message)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async checkIntensivity(){
+      if (this.chosenMarker.id===null) {
+        this.setNotification("error","var(--error)","Выберите метку на карте, для расчета интенсивности")
+        return
+      } else {
+        this.notification=false
+      }
+      try {
+        const response = await getIntensity(this.chosenMarker.id)
+        if (response.status===200) {
+          this.isIntensityCard = true
+          this.intensityCard = {
+            result: response.data[1],
+            day: response.data[0]
+          }
         } else {
           this.setNotification("error","var(--error)",response.message)
         }

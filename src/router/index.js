@@ -82,7 +82,7 @@ router.beforeEach(async (to, from, next) => {
       return next();
     }
   } else {
-    if ((isAuth==='false' || isAuth===null) && to.name!=='map' && to.name!=='home') {
+    if ((isAuth==='false' || isAuth===null) && (to.name!=='map' || to.name!=='home') && to.name==='create_report') {
       return next({name: 'home'});
     } else {
       return next()

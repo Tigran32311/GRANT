@@ -299,10 +299,8 @@ import {tr} from "vuetify/locale";
       isEmployee: false,
     }),
     mounted() {
-      console.log("fsf"+this.isLogin)
       if (this.$store.getters.getIsAuthenticated==='true') {
         this.isLogin = true
-        console.log(this.$store.getters.getCurrentUser.role)
         switch (this.$store.getters.getCurrentUser.role) {
           case 'ADMIN':
             this.isAdmin=true
