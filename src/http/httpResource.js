@@ -10,7 +10,8 @@ const isHandlerEnabled = (config = {}) => {
 
 const instance = axios.create({
     // baseURL: process.env.VUE_APP_RESOURCE_SERVER,
-    baseURL: "http://localhost:8080/api",
+    // baseURL: "http://localhost:8080/api",
+    baseURL: "/api",
     withCredentials: true,
     timeout: 10000,
     headers: {

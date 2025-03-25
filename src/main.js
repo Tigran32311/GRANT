@@ -48,7 +48,7 @@ globalCookiesConfig({
     expireTimes: "10d",
     path: "/",
     domain: "",
-    secure: true,
+    secure: false,
     sameSite: "None",
 });
 
@@ -58,7 +58,7 @@ createApp(App)
     .use(store)
     .use(VueCookies, { expires: '7d',   path: "/",
         domain: "",
-        secure: true,
+        secure: false,
         sameSite: "None",})
     .use(Vuex)
     .use(createYmaps({

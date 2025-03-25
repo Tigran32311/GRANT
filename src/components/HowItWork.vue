@@ -21,14 +21,25 @@
       <div class="text-h6 mt-5 d-md-none">Нейронная сеть выделяет на видео<br/> машины по категориям</div>
     </v-col>
     <v-col class="d-flex justify-center align-center flex-row ga-5">
-      <v-img src="/src/assets/car_detected.png"></v-img>
-      <v-img src="/src/assets/car_detected.png"></v-img>
+      <v-img :src="getImageUrl"></v-img>
+      <v-img :src="getImageUrl"></v-img>
     </v-col>
   </v-row>
   <v-row class="mb-5">
 
   </v-row>
 </template>
+
+<script>
+export default {
+  data () {
+    return {
+      getImageUrl: new URL(`/src/assets/car_detected.png`, import.meta.url).href
+    }
+  }
+}
+</script>
+
 
 <style scoped>
 
